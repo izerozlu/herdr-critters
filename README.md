@@ -1,16 +1,18 @@
 # herdr-critters
 
-A Herdr desktop app mod: the Agents sidebar as retro pixel cards.
+A Herdr desktop app mod: the Agents sidebar as cards with a critter for each
+agent. The look is a theme: retro pixel art, an Edo woodblock print or glossy
+Y2K.
 
-- One card per agent: a pixel sprite, the agent's name with its status box
-  (`IDLE`, `BUSY`, `HELP!`, `DONE`) beside it, and the session name under it
-  (else the tab).
+- One card per agent: a sprite, the agent's name with its status box (the
+  theme's word, for example `IDLE`, `BUSY`, `HELP!`, `DONE` in retro) beside
+  it, and the session name under it (else the tab).
 - Every agent gets a name from a list of 30 (4 to 7 letters, `names` in the
   theme), kept across restarts and never two the same. Each name is a
   character with its own sprite.
-- Each sprite has one picture per status: idle (eyes shut), working (a yellow
-  bolt), blocked (red eyes, a red `!`, a sweat drop), done (happy eyes, a green
-  check). The sprite box background and border follow the status too.
+- Each sprite has one picture per status: idle (eyes shut), working (a bolt),
+  blocked (a `!` and a sweat drop), done (happy eyes and a check). The sprite
+  box background and border follow the status too.
 - Cards are grouped by machine or by space: click `BY MACHINE` / `BY SPACE` in
   the panel header. Each group header shows `busy/total`. A space header uses
   the space's color from the Spaces list.
@@ -18,11 +20,8 @@ A Herdr desktop app mod: the Agents sidebar as retro pixel cards.
   when blocked, a check when done. Working sprites bob.
 - Click a card to focus its pane. Hover to pin or unpin.
 - A narrow sidebar (under 160 px) shows only the sprite boxes.
-- The look is a theme. The header button next to `BY MACHINE` shows the active
-  theme (`RETRO`); click it to switch to the next one. Three themes ship:
-  `retro` (dark pixel critters), `edo` (an ukiyo-e print on washi paper, with
-  Japanese food and objects as the critters) and `y2k` (glossy aqua, chrome and
-  lime on a wallpaper sky).
+- The look is a theme (see [Themes](#themes)). The header button next to
+  `BY MACHINE` shows the active theme (`RETRO`); click it to switch to the next.
 
 ![Herdr critters](preview.png)
 
@@ -52,27 +51,29 @@ A symlink does not work: Herdr does not load a mod's images through one.
 `RECIPE.md` is the brief another agent builds the mod from. Update it and
 `preview.png` when the mod changes.
 
-## Art
-
-`art/generate.py` is the engine; each theme's art lives in `art/themes/<id>/`.
-Retro's sprites, scenes and icons are ASCII grids. Edo and y2k are vector
-themes: each package draws the SVG itself (edo: woodblock shapes with an ink
-outline, `art/themes/edo/kit.py`; y2k: glossy critters with a white shine,
-`art/themes/y2k/kit.py`). The SVGs go to `mods/herdr-critters/themes/<id>/art/`.
-`art/preview.py` draws a sheet of them (`art/preview-sprites.png`; a vector theme
-needs `--with resvg-py`). Edit the art, then:
-
-```sh
-uv run --no-project art/generate.py --theme retro
-./install.sh
-```
-
-`--theme` defaults to `retro`.
-
 ## Themes
 
-Everything look-related lives in `mods/herdr-critters/themes/<id>/`. `main.js`
-reads only theme data.
+Three themes ship. Each has its own 30 names and critters, colors, scenes,
+status words and fonts.
+
+| Theme | Look | Status words | Fonts |
+| --- | --- | --- | --- |
+| `retro` (default) | Dark pixel arcade: pixel critters, a dusk sky over bricks. | `IDLE` `BUSY` `HELP!` `DONE` | Silkscreen, VT323 |
+| `edo` | An ukiyo-e woodblock print on washi paper: Japanese food and objects as vector critters with an ink outline. | `IDLE` `BUSY` `HELP!` `DONE` | Shippori Mincho, Yuji Syuku |
+| `y2k` | Glossy Aqua, about 2000 to 2005: vector critters with a white shine, a wallpaper sky over green hills, a light silver panel. | `BRB` `SYNC` `OMG!` `W00T` | Orbitron, Share Tech Mono |
+
+### How theming works
+
+A theme is data. `main.js` draws the view and reads every color, word, font,
+name and art path from the active theme object. It never hard-codes a look.
+
+- `themes/<id>/theme.js` holds the data (see `RECIPE.md` `## Themes` for the
+  keys).
+- `themes/<id>/art/` holds the SVGs the view shows: the sprites, scenes and
+  icons.
+- `themes/index.js` lists the themes. The header button cycles through them.
+
+Everything look-related lives in `mods/herdr-critters/themes/<id>/`:
 
 ```
 mods/herdr-critters/
@@ -98,9 +99,40 @@ unknown id falls back to `retro`. Retro keeps its names in `localStorage` key
    the picked names are stored (default `names.<id>`; retro keeps `names`).
 2. Add the art in `themes/<id>/art/` (`sprite-<name>-<status>.svg` for every
    name, `scene-<status>.svg`, `icon-machine-<scene>.svg` for every scene,
-   `icon-dither.svg`). Use `art/themes/<id>/` and `generate.py --theme <id>`.
+   `icon-dither.svg`). Make them with an art package (see [Art](#art)).
 3. Import it in `themes/index.js` and add it to `THEMES`. The order is the
    cycle order of the header button.
+
+## Art
+
+`art/generate.py` writes a theme's SVGs to `mods/herdr-critters/themes/<id>/art/`
+from the Python package `art/themes/<id>/`. A package draws in one of two ways:
+
+- **Pixel grids** (retro): the package exports ASCII grids, one character per
+  pixel, and per-status poses. The engine turns them into SVG and adds the
+  status marks. See the `generate.py` docstring for the names a package exports.
+- **Vector** (edo, y2k): the package sets `VECTOR = True` and draws the SVG
+  text itself: `SPRITES` maps a name to a function of the status, and `SCENES`
+  and `ICONS` map a name to SVG text. Each vector package has a `kit.py` with
+  one face engine, so every critter poses the same way. Edo draws woodblock
+  shapes with an ink outline. Y2k draws glossy bodies with a white shine: a
+  `Critter` gives its body and face position, and the kit adds the eyes, mouth,
+  blush and status marks.
+
+Edit the art, then:
+
+```sh
+uv run --no-project art/generate.py --theme <id>     # default: retro
+./install.sh
+```
+
+`art/preview.py` draws a sheet of every sprite in every pose
+(`art/preview-sprites.png`). Vector themes also need resvg:
+
+```sh
+uv run --no-project --with pillow art/preview.py --theme retro
+uv run --no-project --with pillow --with resvg-py art/preview.py --theme y2k out.png
+```
 
 ## Fonts
 
