@@ -5,7 +5,8 @@ export default {
   id: "y2k",
   label: "Y2K",
   art: "mods/herdr-critters/themes/y2k/art",
-  fonts: { pixel: "Silkscreen", mono: "VT323" },
+  // Share Tech Mono runs larger than VT323, so the name text is smaller.
+  fonts: { pixel: "Orbitron", mono: "Share Tech Mono", monoSize: 15, monoLine: "18px" },
   colors: {
     bg: "#dde5ee",
     head: "#5a6f8c",

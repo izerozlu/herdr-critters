@@ -194,7 +194,7 @@ export default class RetroAgents extends View {
             h_flex()
               .gap(6)
               .items_center()
-              .child(div().flex_1().min_w(0).font_family(fonts.mono).text_size(20).line_height("18px").text_color(C.text).truncate().child(name))
+              .child(div().flex_1().min_w(0).font_family(fonts.mono).text_size(fonts.monoSize ?? 20).line_height(fonts.monoLine ?? "18px").text_color(C.text).truncate().child(name))
               .child(
                 this.pixel(div(), 10, s.color)
                   .flex_none()
@@ -332,7 +332,7 @@ export default class RetroAgents extends View {
             .child(this.pixel(div(), 11, C.head).flex_none().child("AGENTS"))
             .child(this.headerButton("critters-group", "Group agents by machine or by space", () => setShared(GROUP_KEY, bySpace ? "machine" : "space"), bySpace ? "BY SPACE" : "BY MACHINE"))
             .child(this.headerButton("critters-theme", "Switch the look of the cards", () => setShared(THEME_KEY, THEMES[(THEMES.indexOf(look) + 1) % THEMES.length].id), look.label)))
-          .child(this.pixel(div(), 11, busy ? STATUS.working.color : C.head).flex_none().child(`${busy} BUSY`)),
+          .child(this.pixel(div(), 11, busy ? STATUS.working.color : C.head).flex_none().child(`${busy} ${STATUS.working.word}`)),
       )
       .when(list.length === 0, (el) =>
         el.child(v_flex().px(14).pt(10).gap(6)
