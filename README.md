@@ -5,8 +5,8 @@ A Herdr desktop app mod: the Agents sidebar as retro pixel cards.
 - One card per agent: a pixel sprite, the agent's name with its status box
   (`IDLE`, `BUSY`, `HELP!`, `DONE`) beside it, and the session name under it
   (else the tab).
-- Every agent gets a name from a list of 30 (4 to 7 letters, `NAMES` in
-  `main.js`), kept across restarts and never two the same. Each name is a
+- Every agent gets a name from a list of 30 (4 to 7 letters, `names` in the
+  theme), kept across restarts and never two the same. Each name is a
   character with its own sprite.
 - Each sprite has one picture per status: idle (eyes shut), working (a yellow
   bolt), blocked (red eyes, a red `!`, a sweat drop), done (happy eyes, a green
@@ -19,6 +19,8 @@ A Herdr desktop app mod: the Agents sidebar as retro pixel cards.
 - Click a card to focus its pane. Hover to pin or unpin. Sub-agents show as
   small rows under their parent; click one to peek.
 - A narrow sidebar (under 160 px) shows only the sprite boxes.
+- The look is a theme. The header button next to `BY MACHINE` shows the active
+  theme (`RETRO`); click it to switch to the next one. Only `retro` ships today.
 
 ![Herdr critters](preview.png)
 
@@ -50,14 +52,48 @@ A symlink does not work: Herdr does not load a mod's images through one.
 
 ## Art
 
-The sprites, scenes and icons are ASCII grids in `art/generate.py` and
-`art/sprites/batch_*.py`. `art/preview.py` draws a sheet of them
+The sprites, scenes and icons are ASCII grids. `art/generate.py` is the engine;
+each theme's grids live in `art/themes/<id>/`. The SVGs go to
+`mods/herdr-critters/themes/<id>/art/`. `art/preview.py` draws a sheet of them
 (`art/preview-sprites.png`). Edit a grid, then:
 
 ```sh
-uv run --no-project art/generate.py
+uv run --no-project art/generate.py --theme retro
 ./install.sh
 ```
+
+`--theme` defaults to `retro`.
+
+## Themes
+
+Everything look-related lives in `mods/herdr-critters/themes/<id>/`. `main.js`
+reads only theme data.
+
+```
+mods/herdr-critters/
+  main.js
+  fonts/              shared by all themes
+  themes/
+    index.js          registry (THEMES, DEFAULT_THEME, themeById)
+    retro/
+      theme.js        colors, scenes, status words, names, fonts, art path
+      art/            the SVGs
+```
+
+The chosen theme id is shared state (`herdr-critters.theme`). A missing or
+unknown id falls back to `retro`. Retro keeps its names in `localStorage` key
+`names`; other themes use `names.<id>`.
+
+### Add a theme
+
+1. Copy `themes/retro/theme.js` to `themes/<id>/theme.js`. Change `id`, `label`,
+   `art` and the values. Keep every key. `namesKey` is optional: it sets where
+   the picked names are stored (default `names.<id>`; retro keeps `names`).
+2. Add the art in `themes/<id>/art/` (`sprite-<name>-<status>.svg` for every
+   name, `scene-<status>.svg`, `icon-machine-<scene>.svg` for every scene,
+   `icon-dither.svg`). Use `art/themes/<id>/` and `generate.py --theme <id>`.
+3. Import it in `themes/index.js` and add it to `THEMES`. The order is the
+   cycle order of the header button.
 
 ## Fonts
 
@@ -67,7 +103,7 @@ Silkscreen and VT323, both under the SIL Open Font License (see
 
 ## Limits
 
-- The palette is fixed. It does not follow the Herdr theme.
+- The palette is fixed per theme. It does not follow the Herdr theme.
 - Past 30 agents, names repeat with a number (`pixel 2`) and share a sprite.
 
 ## Thanks
