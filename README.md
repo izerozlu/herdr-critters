@@ -53,8 +53,8 @@ A symlink does not work: Herdr does not load a mod's images through one.
 
 ## Themes
 
-Five themes ship. Each has its own names and critters (30, or 12 in noir and
-deepsea), colors, scenes, status words and fonts.
+Six themes ship. Each has its own names and critters (30, or 12 in noir,
+deepsea and garden), colors, scenes, status words and fonts.
 
 | Theme | Look | Status words | Fonts |
 | --- | --- | --- | --- |
@@ -63,6 +63,7 @@ deepsea), colors, scenes, status words and fonts.
 | `y2k` | Glossy Aqua, about 2000 to 2005: vector critters with a white shine, a wallpaper sky over green hills, a light silver panel. | `BRB` `SYNC` `OMG!` `W00T` | Orbitron, Share Tech Mono |
 | `noir` | A 1940s detective city at night: 12 critters in costume as black cutouts against an office window with venetian blinds, all grays with one blood red. Raster PNG art. | `QUIET` `SNOOP` `HEAT!` `SOLVED` | Silkscreen, VT323 |
 | `deepsea` | A bioluminescent deep sea at night: 12 sea creatures as soft see-through gel that glows from inside, over dark water with light shafts. | `DRIFT` `DIVE` `SOS!` `DOCK` | Silkscreen, VT323 |
+| `garden` | A light cottage garden as a felt craft toy: 12 garden bugs and small animals in puffy matte felt with running stitches, felt hills and flowers. | `REST` `GROW` `WILT!` `BLOOM` | Silkscreen, VT323 |
 
 ### How theming works
 
@@ -85,11 +86,12 @@ mods/herdr-critters/
     index.js          registry (THEMES, DEFAULT_THEME, themeById)
     retro/
       theme.js        colors, scenes, status words, names, fonts, art path
-      art/            the SVGs (PNGs for noir, deepsea)
+      art/            the SVGs (PNGs for noir, deepsea, garden)
     edo/              same layout
     y2k/              same layout
     noir/             same layout
     deepsea/          same layout
+    garden/           same layout
 ```
 
 The chosen theme id is shared state (`herdr-critters.theme`). A missing or
@@ -134,7 +136,10 @@ from the Python package `art/themes/<id>/`. A package draws in one of three ways
   skia-python: a `Critter` is a list of parts (gel shapes, thick limbs, thin
   glowing strands) and its face position, and `kit.py` adds the glow, the face
   and the status marks. It saves 256-color PNGs with libimagequant
-  (`imagequant`), so the files stay small.
+  (`imagequant`), so the files stay small. Garden draws felt with Pillow and
+  numpy: its `kit.py` paints each shape as a felt piece (fuzzy edge, soft
+  shadow, matte puffy shading, a running stitch) and holds the face engine; each
+  batch file gives a critter's felt pieces and face position.
 
 Edit the art, then:
 
@@ -147,6 +152,7 @@ A raster theme needs its engine: add it with `--with`. Noir:
 `uv run --no-project --with pillow --with skia-python art/generate.py --theme noir`.
 Deepsea also needs imagequant:
 `uv run --no-project --with pillow --with skia-python --with imagequant art/generate.py --theme deepsea`.
+Garden: `uv run --no-project --with numpy --with pillow art/generate.py --theme garden`.
 
 `art/preview.py` draws a sheet of every sprite in every pose
 (`art/preview-sprites.png`). Vector themes also need resvg; raster themes need
@@ -159,7 +165,7 @@ uv run --no-project --with pillow --with resvg-py art/preview.py --theme y2k out
 
 ## Fonts
 
-Retro, Noir and Deepsea use Silkscreen and VT323. Edo uses Shippori Mincho and Yuji Syuku, cut
+Retro, Noir, Deepsea and Garden use Silkscreen and VT323. Edo uses Shippori Mincho and Yuji Syuku, cut
 to the Latin letters with `pyftsubset` so the files stay small. Y2k uses
 Orbitron and Share Tech Mono. All are under the SIL Open Font License (see
 `mods/herdr-critters/fonts/LICENSE-*.txt`).
