@@ -53,8 +53,8 @@ A symlink does not work: Herdr does not load a mod's images through one.
 
 ## Themes
 
-Four themes ship. Each has its own names and critters (30, or 12 in noir), colors,
-scenes, status words and fonts.
+Five themes ship. Each has its own names and critters (30, or 12 in noir and
+deepsea), colors, scenes, status words and fonts.
 
 | Theme | Look | Status words | Fonts |
 | --- | --- | --- | --- |
@@ -62,6 +62,7 @@ scenes, status words and fonts.
 | `edo` | An ukiyo-e woodblock print on washi paper: Japanese food and objects as vector critters with an ink outline. | `IDLE` `BUSY` `HELP!` `DONE` | Shippori Mincho, Yuji Syuku |
 | `y2k` | Glossy Aqua, about 2000 to 2005: vector critters with a white shine, a wallpaper sky over green hills, a light silver panel. | `BRB` `SYNC` `OMG!` `W00T` | Orbitron, Share Tech Mono |
 | `noir` | A 1940s detective city at night: 12 critters in costume as black cutouts against an office window with venetian blinds, all grays with one blood red. Raster PNG art. | `QUIET` `SNOOP` `HEAT!` `SOLVED` | Silkscreen, VT323 |
+| `deepsea` | A bioluminescent deep sea at night: 12 sea creatures as soft see-through gel that glows from inside, over dark water with light shafts. | `DRIFT` `DIVE` `SOS!` `DOCK` | Silkscreen, VT323 |
 
 ### How theming works
 
@@ -84,10 +85,11 @@ mods/herdr-critters/
     index.js          registry (THEMES, DEFAULT_THEME, themeById)
     retro/
       theme.js        colors, scenes, status words, names, fonts, art path
-      art/            the SVGs (PNGs for noir)
+      art/            the SVGs (PNGs for noir, deepsea)
     edo/              same layout
     y2k/              same layout
     noir/             same layout
+    deepsea/          same layout
 ```
 
 The chosen theme id is shared state (`herdr-critters.theme`). A missing or
@@ -126,9 +128,13 @@ from the Python package `art/themes/<id>/`. A package draws in one of three ways
   work as for vector, but give PNG bytes, and the files end in `.png`. Set
   `artExt: "png"` in the theme's `theme.js` so the mod loads them. Draw sprites
   at 2x (320 x 256) and scenes at 576 x 480, so they stay sharp. Noir draws
-  black cutout critters with skia-python: a `Critter` gives its silhouette,
-  its few pale or red details and its face position, and the kit adds the
-  backlight rim, the eyes, the mouth and the status marks.
+  black cutout critters with skia-python: a `Critter` gives its silhouette, its
+  few pale or red details and its face position, and the kit adds the backlight
+  rim, the eyes, the mouth and the status marks. Deepsea draws soft gel with
+  skia-python: a `Critter` is a list of parts (gel shapes, thick limbs, thin
+  glowing strands) and its face position, and `kit.py` adds the glow, the face
+  and the status marks. It saves 256-color PNGs with libimagequant
+  (`imagequant`), so the files stay small.
 
 Edit the art, then:
 
@@ -139,6 +145,8 @@ uv run --no-project art/generate.py --theme <id>     # default: retro
 
 A raster theme needs its engine: add it with `--with`. Noir:
 `uv run --no-project --with pillow --with skia-python art/generate.py --theme noir`.
+Deepsea also needs imagequant:
+`uv run --no-project --with pillow --with skia-python --with imagequant art/generate.py --theme deepsea`.
 
 `art/preview.py` draws a sheet of every sprite in every pose
 (`art/preview-sprites.png`). Vector themes also need resvg; raster themes need
@@ -151,7 +159,7 @@ uv run --no-project --with pillow --with resvg-py art/preview.py --theme y2k out
 
 ## Fonts
 
-Retro and Noir use Silkscreen and VT323. Edo uses Shippori Mincho and Yuji Syuku, cut
+Retro, Noir and Deepsea use Silkscreen and VT323. Edo uses Shippori Mincho and Yuji Syuku, cut
 to the Latin letters with `pyftsubset` so the files stay small. Y2k uses
 Orbitron and Share Tech Mono. All are under the SIL Open Font License (see
 `mods/herdr-critters/fonts/LICENSE-*.txt`).

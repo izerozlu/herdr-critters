@@ -85,8 +85,9 @@ Scenes by machine: this machine is `dusk` (purple), other machines take `den`
   (vector woodblock prints) and y2k (glossy vector critters). A raster theme
   draws the same files as PNG (`.png` in place of `.svg`) and sets `artExt`:
   noir (black cutout critters, drawn with skia-python; run generate.py with
-  `--with pillow --with skia-python`).
-- **Fonts**: Silkscreen and VT323 (retro, noir), Shippori Mincho and Yuji Syuku cut
+  `--with pillow --with skia-python`) and deepsea (soft gel critters, drawn with
+  skia-python; also `--with imagequant`).
+- **Fonts**: Silkscreen and VT323 (retro, noir, deepsea), Shippori Mincho and Yuji Syuku cut
   to Latin letters (edo), Orbitron and Share Tech Mono (y2k), all SIL Open Font
   License, in `fonts/`.
 
