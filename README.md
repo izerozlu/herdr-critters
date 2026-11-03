@@ -30,11 +30,7 @@ Y2K or neon cyberpunk.
 
 Ask your Herdr agent:
 
-> Add herdr.dev/layouts/izerozlu/herdr-critters
-
-It copies `layouts/critters.json` and `mods/herdr-critters/` into
-`~/.config/herdr-app/`, runs `herdr-app check` and switches to the `critters`
-layout. `ctrl-shift-l` switches back to your own layout.
+> Read ~/.config/herdr-app/AGENTS.md, then add this layout: https://github.com/izerozlu/herdr-critters
 
 To use only the mod in a layout of your own, set that layout's agents block to
 `"content": { "mod": "herdr-critters" }`.
