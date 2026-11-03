@@ -5,6 +5,8 @@ export default {
   id: "deepsea",
   label: "DEEPSEA",
   art: "mods/herdr-critters/themes/deepsea/art",
+  // The art is raster (soft gel, drawn with skia-python), so its files are PNG.
+  artExt: "png",
   fonts: { pixel: "Silkscreen", mono: "VT323" },
   colors: {
     bg: "#070b18",

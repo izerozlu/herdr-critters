@@ -1,181 +1,138 @@
-"""Sprites batch A: nudi, gulper, pearl, glim, rolly, krill."""
+"""Sprites batch A: lumen, bloom, inky, kraken, coil, pinch."""
 
-SPRITES: dict[str, tuple[dict[str, str], list[str]]] = {
-    # A sea slug: a low violet body, orange frills on its back and two horns.
-    "nudi": (
-        {"N": "#7a62ff", "n": "#b4a4ff", "F": "#ff8a3a", "g": "#fff27a", "w": "#ffffff", "k": "#140a30"},
-        [
-            "....................",
-            "....................",
-            "....................",
-            "..N..N..............",
-            "..N..N..g.g.g.g.....",
-            "...NN...F.F.F.F.g...",
-            "..NNNN.FFFFFFFFFF...",
-            ".NNNNNNNNNNNNNNNNN..",
-            ".NkNNkNNnNNnNNnNNN..",
-            ".NkNNkNNNNNNNNNNNNN.",
-            ".NNNNNNNNNNNNNNNNNN.",
-            ".NwwwwwwwwwwwwwwwwN.",
-            "..NNNNNNNNNNNNNNNNN.",
-            "...nnnnnnnnnnnnnnn..",
-            "....................",
-            "....................",
-        ],
-    ),
-    # A gulper eel: a huge open mouth and a long tail that ends in a light.
-    "gulper": (
-        {"G": "#3a8ab0", "g": "#7ad0f0", "m": "#0a1420", "w": "#eaffff", "k": "#04101a", "L": "#ff70c8"},
-        [
-            "....................",
-            "....................",
-            "....GGGGGG..........",
-            "...GGGGGGGGG........",
-            "..GGwGGGGGGGG.......",
-            "..GGkGGGGGGGGG......",
-            "..GgggggggggGGG.....",
-            "..mmmmmmmmmmmGGG....",
-            "..mmmmmmmmmmmmGG....",
-            "..mmmmmmmmmmmGGG....",
-            "..GgggggggggGGG.....",
-            "...GGGGGGGGGGGG.....",
-            ".....GGGGGGGGGG..L..",
-            "..........GGGG..L.L.",
-            "...........GGGGGGL..",
-            ".............GGG....",
-        ],
-    ),
-    # A clam with a glowing pearl, peeking out of its open shell.
-    "pearl": (
-        {"S": "#8a7ac8", "s": "#c4b8f0", "d": "#3a2e6a", "W": "#eaf8ff", "w": "#9fe8ff", "k": "#1a1030", "p": "#ff9ad8"},
-        [
-            "....................",
-            "....................",
-            "....................",
-            ".....SSSSSSSSSS.....",
-            "...SSsSsSsSsSsSSS...",
-            "..SSsSsSsSsSsSsSSS..",
-            "..SdddddddddddddS...",
-            "..dddddWWWWdddddd...",
-            "..dddkWWWWWWkdddd...",
-            "..dddkWWwWWWkdddd...",
-            "..ddddWWWWWWddddd...",
-            "..SdddpWWWWpddddS...",
-            "..SSsSsSsSsSsSsSSS..",
-            "...SSsSsSsSsSsSSS...",
-            ".....SSSSSSSSSS.....",
-            "....................",
-        ],
-    ),
-    # A lanternfish: a small round fish with a row of glowing dots.
-    "glim": (
-        {"Y": "#4a6ad8", "y": "#8aa8ff", "f": "#2e4aa8", "o": "#7ffcff", "k": "#06102a", "w": "#eaffff"},
-        [
-            "....................",
-            "....................",
-            "....................",
-            "........YYYY........",
-            "......YYYYYYYY......",
-            "f...YYYYYYYYYYY.....",
-            "ff.YYYYYYYYYYwYY....",
-            "fffYYYYYYYYYYkYYY...",
-            "ffYYYYYYYYYYYYYYYY..",
-            "fffYoYoYoYoYYYYyy...",
-            "ff.YYYYYYYYYYYYY....",
-            "f...YyyyyyyyyyY.....",
-            "......YYYYYYY.......",
-            ".......ff..ff.......",
-            "......fff.fff.......",
-            "....................",
-        ],
-    ),
-    # A giant isopod: a segmented shell, two feelers and many short legs.
-    "rolly": (
-        {"I": "#b0a8d0", "i": "#e0dcf4", "d": "#6a6290", "k": "#1a1630", "L": "#8a82b0"},
-        [
-            "....................",
-            "....................",
-            "....................",
-            "....d..........d....",
-            ".....d........d.....",
-            "......IIIIIIII......",
-            "....IIIIIIIIIIII....",
-            "...IIkIIIIIIIIkII...",
-            "...IIkIIIIIIIIkII...",
-            "...dddddddddddddd...",
-            "...IiIIiIIiIIiIIi...",
-            "...dddddddddddddd...",
-            "...IiIIiIIiIIiIIi...",
-            "....dddddddddddd....",
-            "....L.L.L..L.L.L....",
-            "...L.L.L....L.L.L...",
-        ],
-    ),
-    # A krill: a curled pink shrimp with long feelers.
-    "krill": (
-        {"K": "#ff7a9a", "k": "#ffb8c8", "d": "#c04a6a", "e": "#140810", "a": "#ffd0dc", "o": "#7ffcff"},
-        [
-            "....................",
-            "....................",
-            "..a.................",
-            "...a..KKKKK.........",
-            "....aKKKKKKKK.......",
-            ".....KeeKKKKKKK.....",
-            ".....KeeKkKkKkKKK...",
-            ".....KKKKKKKKKKKKK..",
-            "......KoKKoKKoKKKK..",
-            ".......KKKKKKKKKKK..",
-            "........dKdKdKKKK...",
-            "........d.d.d.KKKK..",
-            "........d.d.d...KKK.",
-            "...............KdKd.",
-            "..............d.d.d.",
-            "....................",
-        ],
-    ),
-}
+from .kit import Critter, Part
+from .paths import circle_d
 
-POSES: dict[str, dict] = {
-    "nudi": {
-        "face": "N", "line": "k", "eyes": [(2, 8), (5, 8)],
-        "idle": [(8, 4, "F.F.F.F"), (16, 5, "F")],
-        "working": [(8, 4, "U.U.U.U"), (16, 5, "U")],
-        "blocked": [(3, 10, "kk")],
-        "done": [(2, 10, "k"), (5, 10, "k"), (3, 11, "kk")],
-    },
-    "gulper": {
-        "face": "G", "line": "k", "eyes": [(4, 4)],
-        "idle": [(2, 7, "GGGGGGGGGGG"), (2, 8, "gggggggggggg"), (2, 9, "GGGGGGGGGGG"), (16, 12, "..G"), (16, 13, ".G.G"), (17, 14, "G")],
-        "working": [(17, 12, "U"), (16, 13, "U.U"), (17, 14, "U")],
-        "blocked": [(17, 12, "R"), (16, 13, "R.R"), (17, 14, "R")],
-        "done": [(2, 9, "ggggggggggg")],
-    },
-    "pearl": {
-        "face": "d", "line": "S", "eyes": [(5, 8), (12, 8)],
-        "idle": [(8, 9, "W")],
-        "working": [(8, 9, "U"), (7, 7, "wWWw")],
-        "blocked": [(8, 10, "kk")],
-        "done": [(7, 10, "kWWk")],
-    },
-    "glim": {
-        "face": "Y", "line": "k", "eyes": [(13, 6)],
-        "idle": [(4, 9, "Y.Y.Y.Y")],
-        "working": [(4, 9, "U.U.U.U")],
-        "blocked": [(16, 9, "kk")],
-        "done": [(15, 9, "kyy")],
-    },
-    "rolly": {
-        "face": "I", "line": "d", "eyes": [(5, 7), (14, 7)],
-        "idle": [(4, 3, "."), (15, 3, ".")],
-        "working": [(4, 3, "U"), (15, 3, "U")],
-        "blocked": [(9, 8, "kk")],
-        "done": [(8, 8, "kIIk")],
-    },
-    "krill": {
-        "face": "K", "line": "e", "eyes": [(6, 5), (7, 5)],
-        "idle": [(7, 8, "K"), (10, 8, "K"), (13, 8, "K")],
-        "working": [(7, 8, "U"), (10, 8, "U"), (13, 8, "U")],
-        "blocked": [(6, 7, "ee")],
-        "done": [(5, 7, "k")],
-    },
+
+def _wave(x: float, y0: float, sway: float, y1: float) -> str:
+    """A hanging line that sways left and right."""
+    m = (y0 + y1) / 2
+    return f"M{x} {y0}Q{x - sway} {(y0 + m) / 2} {x} {m}T{x - sway * 0.4} {y1}"
+
+
+def _mirror(d: str) -> str:
+    """Path text flipped left to right around x = 50 (every first number of a pair is an x)."""
+    out, nums, x_next = [], d.replace("M", " M ").replace("L", " L ").replace("Q", " Q ").replace("C", " C ").replace("Z", " Z ").split(), True
+    for tok in nums:
+        if tok.isalpha():
+            out.append(tok)
+            x_next = True
+            continue
+        out.append(f"{100 - float(tok):g}" if x_next else tok)
+        x_next = not x_next
+    return " ".join(out)
+
+
+CRITTERS: dict[str, Critter] = {
+    "lumen": Critter(  # an anglerfish, side on, facing right, with a lure on a stalk
+        parts=[
+            Part("M27 52L11 39Q15 52 11 65Z", tone="fin"),
+            Part("M37 32Q41 20 55 27.5Q45 28 37 32Z", tone="fin"),
+            Part("M55 29Q56 16 68 16.5", kind="strand", tone="fin", width=2),
+            Part("M24 52C24 36 37 27 53 27C67 27 77 35 80 45L69 52L80 59C76 70 65 76 51 76C36 76 24 67 24 52Z"),
+            Part("M43 60Q33 61 35 70Q42 68 48 62Z", tone="fin"),
+            Part("M75 46.8L76.2 51L78.2 45.8Z M71.6 49L72.6 52.2L74.2 48Z M75 57.2L76.2 53L78.2 58.2Z "
+                 "M71.6 55L72.6 51.8L74.2 56Z", kind="flat", tone="teeth"),
+        ],
+        colors={"body": "#8b6cff", "fin": "#5fd4ff", "teeth": "#f4f0ff", "light": "#b8fff4"},
+        eyes=[(60, 41)],
+        eye=4.4,
+        spots=[(36, 47, 1.6), (33, 58, 1.3), (45, 70, 1.3), (60, 69, 1.1)],
+        lure=(71.5, 17, 4.2),
+    ),
+    "bloom": Critter(  # a jellyfish
+        parts=[
+            Part(_wave(29, 47, 4, 77), kind="strand", tone="fin", width=2.2),
+            Part(_wave(36, 48, -3, 79), kind="strand", tone="fin", width=2.2),
+            Part(_wave(64, 48, 3, 79), kind="strand", tone="fin", width=2.2),
+            Part(_wave(71, 47, -4, 77), kind="strand", tone="fin", width=2.2),
+            Part("M45 47Q40 57 45 65Q49 72 44 79", kind="limb", tone="fin", width=3.8),
+            Part("M55 47Q60 57 55 65Q51 72 56 79", kind="limb", tone="fin", width=3.8),
+            Part("M24 46C24 26 36 14 50 14C64 14 76 26 76 46Q71 50 66 46Q61 50 56 46Q50.5 50 45 46Q39.5 50 34 46Q29 50 24 46Z"),
+        ],
+        colors={"body": "#ff7ad9", "fin": "#b98cff", "light": "#fff0fc"},
+        eyes=[(42, 31), (58, 31)],
+        mouth=(50, 37.5),
+        eye=3.3,
+        spots=[(29.5, 44, 1.2), (39.5, 45, 1.2), (50.5, 45, 1.2), (61, 45, 1.2), (71, 44, 1.2)],
+    ),
+    "inky": Critter(  # an octopus
+        parts=[
+            Part("M34 52Q25 59 22 67Q20 75 27 75", kind="limb", width=5.4),
+            Part("M66 52Q75 59 78 67Q80 75 73 75", kind="limb", width=5.4),
+            Part("M40 54Q36 66 32 72Q30 77 36 77", kind="limb", width=5.4),
+            Part("M60 54Q64 66 68 72Q70 77 64 77", kind="limb", width=5.4),
+            Part("M46 55Q46 68 43 77", kind="limb", width=5.4),
+            Part("M54 55Q54 68 57 77", kind="limb", width=5.4),
+            Part("M30 55C25 40 32 16 50 16C68 16 75 40 70 55Q50 60 30 55Z"),
+        ],
+        colors={"body": "#2fd8c0", "light": "#e0fffa"},
+        eyes=[(42, 41), (58, 41)],
+        mouth=(50, 48.5),
+        eye=3.7,
+        spots=[(40, 25, 2), (59, 23, 1.5), (55, 29.5, 1.1), (35, 33, 1.1)],
+    ),
+    "kraken": Critter(  # a squid, head up: a pointed mantle with fins, eight arms and two long tentacles
+        parts=[
+            Part("M38 56Q27 62 25 74", kind="strand", tone="arm", width=2.4),
+            Part("M62 56Q73 62 75 74", kind="strand", tone="arm", width=2.4),
+            Part("M25 76.5C22 76.5 21.5 72 24.5 71C27 70.5 28 75 25 76.5Z", tone="arm"),
+            Part("M75 76.5C78 76.5 78.5 72 75.5 71C73 70.5 72 75 75 76.5Z", tone="arm"),
+            Part("M44 14L31 24L43 28Z", tone="fin"),
+            Part("M56 14L69 24L57 28Z", tone="fin"),
+            Part("M41 57Q35 66 36 77", kind="limb", width=3.8),
+            Part("M46 58Q43 68 44 78", kind="limb", width=3.8),
+            Part("M54 58Q57 68 56 78", kind="limb", width=3.8),
+            Part("M59 57Q65 66 64 77", kind="limb", width=3.8),
+            Part("M50 6C58 14 63 26 62 46L38 46C37 26 42 14 50 6Z"),
+            Part("M36 52C36 45 42 42 50 42C58 42 64 45 64 52C64 58 58 61 50 61C42 61 36 58 36 52Z"),
+        ],
+        colors={"body": "#3fb8e8", "fin": "#7fe8ff", "arm": "#5fd0f0", "light": "#d8fbff"},
+        eyes=[(44, 50), (56, 50)],
+        mouth=(50, 56),
+        eye=3.3,
+        spots=[(50, 18, 1.4), (46, 28, 1.2), (54, 33, 1.2), (47, 38, 1)],
+    ),
+    "coil": Critter(  # a nautilus: a striped spiral shell, a hood with the face, and short tentacles
+        parts=[
+            Part("M64 62Q61 70 63 78", kind="strand", tone="arm", width=2.4),
+            Part("M68 63Q68 71 70 78", kind="strand", tone="arm", width=2.4),
+            Part("M72 62Q75 70 78 76", kind="strand", tone="arm", width=2.4),
+            Part("M76 59Q81 65 84 71", kind="strand", tone="arm", width=2.4),
+            Part("M20 52C20 38 30 27 44 27C58 27 68 38 68 52C68 66 58 76 44 76C30 76 20 66 20 52Z", tone="shell"),
+            Part("M44 52Q50 52 49 46Q47 39 39 41Q31 44 33 53Q35 63 46 64Q58 64 61 52Q63 39 52 33",
+                 kind="line", tone="stripe", width=2.2, alpha=0.75),
+            Part("M28 40L33 44M24 54L30 54M28 67L33 63M42 73L42 68M56 69L53 65", kind="line", tone="stripe", width=2, alpha=0.6),
+            Part("M56 51C56 43 63 38 70 38C78 38 83 44 83 52C83 60 76 64 68 64C61 64 56 59 56 51Z"),
+        ],
+        colors={"body": "#ff9a5a", "shell": "#ffe2bc", "stripe": "#d0743a", "arm": "#ffb070", "light": "#fff2c8"},
+        eyes=[(72, 48)],
+        mouth=(77, 55),
+        eye=3.4,
+        spots=[(64, 58, 1), (79, 59, 1)],
+    ),
+    "pinch": Critter(  # a crab: a wide shell, eyes on stalks, two big claws and six legs
+        parts=[
+            Part("M33 60L23 66L20 77", kind="strand", tone="leg", width=2.6),
+            Part("M37 64L30 71L29 79", kind="strand", tone="leg", width=2.6),
+            Part("M42 66L39 73L39 79", kind="strand", tone="leg", width=2.6),
+            Part(_mirror("M33 60L23 66L20 77"), kind="strand", tone="leg", width=2.6),
+            Part(_mirror("M37 64L30 71L29 79"), kind="strand", tone="leg", width=2.6),
+            Part(_mirror("M42 66L39 73L39 79"), kind="strand", tone="leg", width=2.6),
+            Part("M32 54Q24 52 22 44", kind="limb", width=4.2),
+            Part(_mirror("M32 54Q24 52 22 44"), kind="limb", width=4.2),
+            Part("M14 45C11 36 17 30 24 33L21 39L27 40C27 48 18 51 14 45Z"),
+            Part(_mirror("M14 45C11 36 17 30 24 33L21 39L27 40C27 48 18 51 14 45Z")),
+            Part("M42 47L40 37", kind="strand", tone="leg", width=2.4),
+            Part("M58 47L60 37", kind="strand", tone="leg", width=2.4),
+            Part(circle_d(40, 35, 2.8), tone="stalk"),
+            Part(circle_d(60, 35, 2.8), tone="stalk"),
+            Part("M28 56C28 47 38 43 50 43C62 43 72 47 72 56C72 64 62 68 50 68C38 68 28 64 28 56Z"),
+        ],
+        colors={"body": "#ff5a4a", "leg": "#ff8a6a", "stalk": "#fff0ea", "light": "#ffe0c8"},
+        eyes=[(45, 54), (55, 54)],
+        mouth=(50, 61),
+        eye=3,
+        spots=[(40, 35, 1), (60, 35, 1)],
+    ),
 }
