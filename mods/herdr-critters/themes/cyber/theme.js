@@ -5,8 +5,7 @@ export default {
   id: "cyber",
   label: "CYBER",
   art: "mods/herdr-critters/themes/cyber/art",
-  // Orbitron runs wider and Share Tech Mono taller than the retro fonts.
-  fonts: { pixel: "Orbitron", mono: "Share Tech Mono", pixelScale: 0.9, monoScale: 0.8 },
+  fonts: { pixel: "Orbitron", mono: "Share Tech Mono", monoSize: 15, monoLine: "18px" },
   colors: {
     bg: "#07060d",
     head: "#6a5f8a",
