@@ -55,9 +55,10 @@ A symlink does not work: Herdr does not load a mod's images through one.
 ## Art
 
 `art/generate.py` is the engine; each theme's art lives in `art/themes/<id>/`.
-Retro's sprites, scenes and icons are ASCII grids. Edo is a vector theme: its
-package draws the SVG itself (woodblock shapes with an ink outline, see
-`art/themes/edo/kit.py`). The SVGs go to `mods/herdr-critters/themes/<id>/art/`.
+Retro's sprites, scenes and icons are ASCII grids. Edo and y2k are vector
+themes: each package draws the SVG itself (edo: woodblock shapes with an ink
+outline, `art/themes/edo/kit.py`; y2k: glossy critters with a white shine,
+`art/themes/y2k/kit.py`). The SVGs go to `mods/herdr-critters/themes/<id>/art/`.
 `art/preview.py` draws a sheet of them (`art/preview-sprites.png`; a vector theme
 needs `--with resvg-py`). Edit the art, then:
 
@@ -104,8 +105,9 @@ unknown id falls back to `retro`. Retro keeps its names in `localStorage` key
 ## Fonts
 
 Retro uses Silkscreen and VT323. Edo uses Shippori Mincho and Yuji Syuku, cut
-to the Latin letters with `pyftsubset` so the files stay small. All are under
-the SIL Open Font License (see `mods/herdr-critters/fonts/LICENSE-*.txt`).
+to the Latin letters with `pyftsubset` so the files stay small. Y2k uses
+Orbitron and Share Tech Mono. All are under the SIL Open Font License (see
+`mods/herdr-critters/fonts/LICENSE-*.txt`).
 Herdr loads them from the mod's `fonts/` folder.
 
 ## Limits

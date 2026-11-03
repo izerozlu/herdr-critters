@@ -1,63 +1,78 @@
 """Y2K scenes (the sprite box behind each agent, one per machine and per status) and icons.
 
-The look is a desktop wallpaper: a sky, a cloud, a sparkle and a glossy grass hill.
+The look is a desktop wallpaper: a soft sky, a lens flare, clouds and two glossy grass hills.
+A scene is 120 x 100; the mod puts the sprite's feet on the front hill's crest (y = 77).
 """
 
-# 36 x 30 grids.
-SCENE_W, SCENE_H, GROUND = 36, 30, 7
+from .kit import orb, spark, svg
 
-CLOUD = ["..wwww...", ".wwwwwww.", "wwwwwwwww"]
-SPARKLE = [(3, 1), (3, 2), (1, 3), (2, 3), (3, 3), (4, 3), (5, 3), (3, 4), (3, 5)]
+SCENE_W, SCENE_H = 120, 100
 
 
-def scene(sky: list[str], sparkle: str, cloud: str, grass: str, shade: str, shine: str) -> tuple[dict[str, str], list[str]]:
-    """Sky bands on top, a sparkle and a cloud, a shine line, then dithered grass."""
-    pal = {"a": sky[0], "b": sky[1], "c": sky[2], "s": sparkle, "w": cloud, "G": grass, "d": shade, "g": shine}
-    rows: list[str] = []
-    sky_rows = SCENE_H - GROUND
-    for y in range(sky_rows):
-        band = "a" if y < sky_rows * 0.45 else "b" if y < sky_rows * 0.8 else "c"
-        rows.append(band * SCENE_W)
-    # A four-point sparkle, top left, and a small one top middle.
-    for x, y in [*SPARKLE, (17, 6)]:
-        rows[y] = rows[y][:x] + "s" + rows[y][x + 1 :]
-    for dy, line in enumerate(CLOUD):
-        for dx, ch in enumerate(line):
-            if ch != ".":
-                y, x = 3 + dy, 24 + dx
-                rows[y] = rows[y][:x] + ch + rows[y][x + 1 :]
-    for y in range(GROUND):
-        if y == 0:
-            rows.append("g" * SCENE_W)
-            continue
-        rows.append("".join("d" if (x + 2 * y) % 5 == 0 else "G" for x in range(SCENE_W)))
-    return pal, rows
+def scene(sky: list[str], back: str, grass: str, deep: str) -> dict:
+    return {"sky": sky, "back": back, "grass": grass, "deep": deep}
 
 
-SCENES = {
-    "bliss": scene(["#2f7fe0", "#5aa2ec", "#8cc4f4"], "#ffffff", "#f4faff", "#3aa83a", "#2a8a2e", "#9be36a"),
-    "ocean": scene(["#1a9cc8", "#3cbcdc", "#7ad8ec"], "#ffffff", "#eefcff", "#1a7fa8", "#126a8f", "#6ee0f2"),
-    "sunset": scene(["#e05a8a", "#f08a7a", "#f8b87a"], "#fff4c8", "#ffe8e0", "#7a4ab0", "#5f3a90", "#c49bf0"),
-    "grape": scene(["#6a4ac8", "#8a6ae0", "#b096f0"], "#ffffff", "#f2ecff", "#c8489a", "#a83a82", "#f29bd2"),
+def draw_scene(s: dict) -> str:
+    top, mid, low = s["sky"]
+    defs = (
+        f'<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{top}"/>'
+        f'<stop offset=".6" stop-color="{mid}"/><stop offset="1" stop-color="{low}"/></linearGradient>'
+        f'<linearGradient id="grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{s["grass"]}"/>'
+        f'<stop offset="1" stop-color="{s["deep"]}"/></linearGradient>'
+        '<radialGradient id="flare"><stop offset="0" stop-color="#ffffff" stop-opacity=".9"/>'
+        '<stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>'
+    )
+    cloud = '<g fill="#ffffff" opacity=".85">{}</g>'.format(
+        "".join(f'<ellipse cx="{x}" cy="{y}" rx="{rx}" ry="{ry}"/>' for x, y, rx, ry in
+                ((86, 22, 13, 6), (96, 18, 9, 7), (104, 23, 10, 5), (40, 40, 9, 3.5), (47, 38, 6, 4)))
+    )
+    body = (
+        f'<rect width="{SCENE_W}" height="{SCENE_H}" fill="url(#sky)"/>'
+        '<circle cx="16" cy="14" r="16" fill="url(#flare)"/>' + spark(16, 14, 7) + spark(30, 26, 2.5)
+        + cloud
+        + f'<path d="M0 70Q30 58 70 68T120 64V100H0Z" fill="{s["back"]}"/>'
+        + '<path d="M0 82Q60 72 120 82V100H0Z" fill="url(#grass)"/>'
+        + '<path d="M10 80.5Q60 72.8 110 80.5" fill="none" stroke="#ffffff" stroke-opacity=".5" stroke-width="1.6" stroke-linecap="round"/>'
+    )
+    return svg(SCENE_W, SCENE_H, defs, body, scale=2.4)
+
+
+PALETTES = {
+    "bliss": scene(["#2f7fe0", "#5aa2ec", "#a8d4f8"], "#6cc05a", "#4cb83c", "#2a8a2e"),
+    "ocean": scene(["#1a9cc8", "#3cbcdc", "#9ae4f2"], "#3aa8c0", "#1f94b8", "#126a8f"),
+    "sunset": scene(["#e05a8a", "#f08a7a", "#fbc890"], "#a070d0", "#8a5ac0", "#5f3a90"),
+    "grape": scene(["#6a4ac8", "#8a6ae0", "#c4b0f6"], "#e070b8", "#d0509e", "#a83a82"),
     # The sprite box behind an agent shows its status; the machine scenes above
-    # color the machine icons. Mid tones, so every outlined sprite still reads.
-    "idle": scene(["#8a9ab0", "#a4b2c4", "#bcc8d6"], "#ffffff", "#e8eef4", "#7a8a9e", "#66768a", "#d4dde8"),
-    "working": scene(["#1e8fe0", "#46b0ee", "#7ccff6"], "#ffffff", "#eefaff", "#1a9cc8", "#1482aa", "#7ae8ff"),
-    "blocked": scene(["#d02a5a", "#e2507a", "#f07c9a"], "#fff0f4", "#ffe4ec", "#a8284e", "#8a1e40", "#ff9ab8"),
-    "done": scene(["#3aa83a", "#62c44a", "#94dc62"], "#ffffff", "#f4ffe8", "#2a8a2e", "#1f7024", "#c8f07a"),
+    # color the machine icons. Mid tones, so every outlined critter still reads.
+    "idle": scene(["#8a9ab0", "#a4b2c4", "#d0dae6"], "#a8b6c6", "#8a9aae", "#66768a"),
+    "working": scene(["#1e8fe0", "#46b0ee", "#a0dcf8"], "#50c8e0", "#22a8d0", "#1482aa"),
+    "blocked": scene(["#d02a5a", "#e2507a", "#f8a0b8"], "#e8789a", "#c03a64", "#8a1e40"),
+    "done": scene(["#3aa83a", "#62c44a", "#c0ec90"], "#8ad86a", "#4cb83c", "#1f7024"),
 }
 
 # ---- icons
 
+
+def machine(s: dict) -> str:
+    """A round bubble monitor on a foot, in the scene's colors (15 x 11)."""
+    top, mid, _ = s["sky"]
+    defs = orb("case", "#ffffff", s["grass"]) + orb("screen", mid, top)
+    return svg(15, 11, defs, (
+        '<rect x="1" y=".6" width="13" height="8" rx="3" fill="url(#case)" stroke="#0b2545" stroke-width=".9"/>'
+        '<rect x="3.2" y="2.3" width="8.6" height="4.6" rx="1.4" fill="url(#screen)"/>'
+        '<ellipse cx="6" cy="3.4" rx="2.2" ry=".8" fill="#ffffff" opacity=".7"/>'
+        f'<path d="M5 10.4H10L9 8.6H6Z" fill="{s["deep"]}"/>'
+    ))
+
+
 ICONS = {
-    # The header's dither block.
-    "dither": ({"x": "#7f95b2"}, ["x.x.x.", ".x.x.x", "x.x.x.", ".x.x.x", "x.x.x.", ".x.x.x"]),
-    # A machine: a round bubble monitor on a foot. Colored per machine by the scene.
-    **{
-        f"machine-{name}": (
-            {"F": pal["g"], "S": pal["a"], "s": pal["w"], "D": pal["d"]},
-            [".FFFFFFFF.", "FSSSSSSSSF", "FSsSSSSSSF", "FSSSSSSSSF", ".FFFFFFFF.", "....DD....", "..DDDDDD.."],
-        )
-        for name, (pal, _rows) in SCENES.items()
-    },
+    # The header's mark: a glossy aqua orb.
+    "dither": svg(12, 12, orb("ball", "#d8f6ff", "#1e7bff"), (
+        '<circle cx="6" cy="6" r="5.2" fill="url(#ball)" stroke="#0b2545" stroke-width=".8"/>'
+        '<ellipse cx="5" cy="3.6" rx="2.6" ry="1.4" fill="#ffffff" opacity=".8"/>'
+    )),
+    **{f"machine-{name}": machine(s) for name, s in PALETTES.items()},
 }
+
+SCENES = {name: draw_scene(s) for name, s in PALETTES.items()}
