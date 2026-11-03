@@ -5,6 +5,8 @@ export default {
   id: "noir",
   label: "NOIR",
   art: "mods/herdr-critters/themes/noir/art",
+  // Drawn as raster PNG art (art/themes/noir, skia-python).
+  artExt: "png",
   fonts: { pixel: "Silkscreen", mono: "VT323" },
   colors: {
     bg: "#101012",

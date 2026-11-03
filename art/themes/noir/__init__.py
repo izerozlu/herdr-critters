@@ -1,21 +1,23 @@
-"""Noir theme art data: sprites, poses, pose marks, scenes and icons.
+"""Noir theme art: raster silhouette sprites, scenes and icons, drawn with skia-python.
 
-The engine (art/generate.py) reads these names from the package:
-SPRITES, POSES, BATCHES, POSE_COLORS, BLOCKED_EYE, BANG, SWEAT, CHECK, BOLT, SCENES, ICONS.
-A new batch file must be imported here and added to BATCHES, or it is not drawn.
+A raster theme for the engine (art/generate.py): RASTER, SPRITES, BATCHES, SCENES, ICONS,
+each picture as PNG bytes. Each batch file has SPRITES (name -> kit.Critter); the kit
+draws a critter in each status. A new batch file must be imported here and added to BATCHES.
 """
 
-from . import batch_a, batch_b
-from .base import BANG, BLOCKED_EYE, BOLT, CHECK, POSE_COLORS, POSES, SPRITES, SWEAT
+from functools import partial
+
+from . import batch_a, batch_b, batch_c, batch_d
+from .kit import sprite
 from .scenes import ICONS, SCENES
 
-# Extra sprite batches, by name, each with its own SPRITES and POSES.
-BATCHES = {"batch_a": batch_a, "batch_b": batch_b}
+RASTER = True
+BATCHES = {"batch_a": batch_a, "batch_b": batch_b, "batch_c": batch_c, "batch_d": batch_d}
+SPRITES = {}
 
 for _name, _batch in BATCHES.items():
     assert not set(_batch.SPRITES) & set(SPRITES), f"{_name}: sprite name taken"
-    assert set(_batch.SPRITES) == set(_batch.POSES), f"{_name}: SPRITES and POSES differ"
-    SPRITES.update(_batch.SPRITES)
-    POSES.update(_batch.POSES)
+    for _sprite, _critter in _batch.SPRITES.items():
+        SPRITES[_sprite] = partial(sprite, _critter)
 
-__all__ = ["BANG", "BATCHES", "BLOCKED_EYE", "BOLT", "CHECK", "ICONS", "POSES", "POSE_COLORS", "SCENES", "SPRITES", "SWEAT"]
+__all__ = ["BATCHES", "ICONS", "RASTER", "SCENES", "SPRITES"]
