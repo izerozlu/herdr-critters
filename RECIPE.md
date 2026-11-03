@@ -40,7 +40,10 @@ Scenes by machine: this machine is `dusk` (purple), other machines take `den`
 - **Names**: each agent gets a random name from a list of 30 (pixel, byte,
   nova, rook, ziggy, mochi, bolt, echo, juno, kiwi, luma, miso, nimbus, onyx,
   pepper, quill, rusty, sprout, tango, umbra, vega, waffle, yeti, zephyr, comet,
-  dusty, fable, gizmo, hopper, ivory). The pick uses `crypto` random, never two
+  dusty, fable, gizmo, hopper, ivory). The `edo` theme has its own 30 (onigiri,
+  sushi, dango, mochi, ramen, tofu, taiyaki, matcha, gyoza, bento, tempura,
+  wasabi, sake, udon, natto, yuzu, miso, senbei, anpan, tamago, kokeshi, daruma,
+  chochin, geta, sensu, furin, kendama, torii, kasa, maneki). The pick uses `crypto` random, never two
   the same, and is kept in `localStorage` by agent address across restarts (key
   `names` for retro, `names.<id>` for other themes). Past 30 agents a name
   repeats with a number (`pixel 2`) and shares a sprite.

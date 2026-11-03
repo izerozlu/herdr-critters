@@ -20,7 +20,9 @@ A Herdr desktop app mod: the Agents sidebar as retro pixel cards.
   small rows under their parent; click one to peek.
 - A narrow sidebar (under 160 px) shows only the sprite boxes.
 - The look is a theme. The header button next to `BY MACHINE` shows the active
-  theme (`RETRO`); click it to switch to the next one. Only `retro` ships today.
+  theme (`RETRO`); click it to switch to the next one. Two themes ship: `retro`
+  (dark pixel critters) and `edo` (an ukiyo-e print on washi paper, with
+  Japanese food and objects as the critters).
 
 ![Herdr critters](preview.png)
 
@@ -78,6 +80,7 @@ mods/herdr-critters/
     retro/
       theme.js        colors, scenes, status words, names, fonts, art path
       art/            the SVGs
+    edo/              same layout
 ```
 
 The chosen theme id is shared state (`herdr-critters.theme`). A missing or
