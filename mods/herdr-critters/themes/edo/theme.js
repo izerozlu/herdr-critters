@@ -5,7 +5,8 @@ export default {
   id: "edo",
   label: "EDO",
   art: "mods/herdr-critters/themes/edo/art",
-  fonts: { pixel: "Silkscreen", mono: "VT323" },
+  // A print serif for labels and a brush script for names, both cut to the Latin letters.
+  fonts: { pixel: "Shippori Mincho", mono: "Yuji Syuku" },
   colors: {
     bg: "#efe6d0",
     head: "#8a7a5e",
