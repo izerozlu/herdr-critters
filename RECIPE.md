@@ -82,8 +82,11 @@ Scenes by machine: this machine is `dusk` (purple), other machines take `den`
   and `icon-dither.svg`. Made by
   `uv run --no-project art/generate.py --theme <id>` (default `retro`) from
   `art/themes/<id>/`: ASCII grids for retro (pixel art), drawing code for edo
-  (vector woodblock prints) and y2k (glossy vector critters).
-- **Fonts**: Silkscreen and VT323 (retro), Shippori Mincho and Yuji Syuku cut
+  (vector woodblock prints) and y2k (glossy vector critters). A raster theme
+  draws the same files as PNG (`.png` in place of `.svg`) and sets `artExt`:
+  noir (black cutout critters, drawn with skia-python; run generate.py with
+  `--with pillow --with skia-python`).
+- **Fonts**: Silkscreen and VT323 (retro, noir), Shippori Mincho and Yuji Syuku cut
   to Latin letters (edo), Orbitron and Share Tech Mono (y2k), all SIL Open Font
   License, in `fonts/`.
 
@@ -93,7 +96,9 @@ A theme is `themes/<id>/theme.js`, a default export of one object:
 
 - `id`, `label` (shown on the header button), `art` (art folder path),
   `fonts` (`pixel`, `mono`, optional `monoSize` and `monoLine` for the name
-  text, default 20 and `18px`), and optional `namesKey` (storage key for names).
+  text, default 20 and `18px`), optional `namesKey` (storage key for names) and
+  optional `artExt` (the art files' type, `"svg"` by default, `"png"` for
+  raster art).
 - `colors`: `bg`, `head`, `machine`, `focus`, `text`, `sub` and the rest the
   view uses (badge, borders, hover, dividers).
 - `scenes` (each `card`, `edge`, `box`, `label`), `localScene` and

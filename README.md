@@ -53,14 +53,15 @@ A symlink does not work: Herdr does not load a mod's images through one.
 
 ## Themes
 
-Three themes ship. Each has its own 30 names and critters, colors, scenes,
-status words and fonts.
+Four themes ship. Each has its own names and critters (30, or 12 in noir), colors,
+scenes, status words and fonts.
 
 | Theme | Look | Status words | Fonts |
 | --- | --- | --- | --- |
 | `retro` (default) | Dark pixel arcade: pixel critters, a dusk sky over bricks. | `IDLE` `BUSY` `HELP!` `DONE` | Silkscreen, VT323 |
 | `edo` | An ukiyo-e woodblock print on washi paper: Japanese food and objects as vector critters with an ink outline. | `IDLE` `BUSY` `HELP!` `DONE` | Shippori Mincho, Yuji Syuku |
 | `y2k` | Glossy Aqua, about 2000 to 2005: vector critters with a white shine, a wallpaper sky over green hills, a light silver panel. | `BRB` `SYNC` `OMG!` `W00T` | Orbitron, Share Tech Mono |
+| `noir` | A 1940s detective city at night: 12 critters in costume as black cutouts against an office window with venetian blinds, all grays with one blood red. Raster PNG art. | `QUIET` `SNOOP` `HEAT!` `SOLVED` | Silkscreen, VT323 |
 
 ### How theming works
 
@@ -69,8 +70,8 @@ name and art path from the active theme object. It never hard-codes a look.
 
 - `themes/<id>/theme.js` holds the data (see `RECIPE.md` `## Themes` for the
   keys).
-- `themes/<id>/art/` holds the SVGs the view shows: the sprites, scenes and
-  icons.
+- `themes/<id>/art/` holds the pictures the view shows (SVG, or PNG for noir):
+  the sprites, scenes and icons.
 - `themes/index.js` lists the themes. The header button cycles through them.
 
 Everything look-related lives in `mods/herdr-critters/themes/<id>/`:
@@ -83,9 +84,10 @@ mods/herdr-critters/
     index.js          registry (THEMES, DEFAULT_THEME, themeById)
     retro/
       theme.js        colors, scenes, status words, names, fonts, art path
-      art/            the SVGs
+      art/            the SVGs (PNGs for noir)
     edo/              same layout
     y2k/              same layout
+    noir/             same layout
 ```
 
 The chosen theme id is shared state (`herdr-critters.theme`). A missing or
@@ -99,14 +101,15 @@ unknown id falls back to `retro`. Retro keeps its names in `localStorage` key
    the picked names are stored (default `names.<id>`; retro keeps `names`).
 2. Add the art in `themes/<id>/art/` (`sprite-<name>-<status>.svg` for every
    name, `scene-<status>.svg`, `icon-machine-<scene>.svg` for every scene,
-   `icon-dither.svg`). Make them with an art package (see [Art](#art)).
+   `icon-dither.svg`). Make them with an art package (see [Art](#art)). For
+   PNG art, the same names end in `.png`, and `theme.js` sets `artExt: "png"`.
 3. Import it in `themes/index.js` and add it to `THEMES`. The order is the
    cycle order of the header button.
 
 ## Art
 
-`art/generate.py` writes a theme's SVGs to `mods/herdr-critters/themes/<id>/art/`
-from the Python package `art/themes/<id>/`. A package draws in one of two ways:
+`art/generate.py` writes a theme's art to `mods/herdr-critters/themes/<id>/art/`
+from the Python package `art/themes/<id>/`. A package draws in one of three ways:
 
 - **Pixel grids** (retro): the package exports ASCII grids, one character per
   pixel, and per-status poses. The engine turns them into SVG and adds the
@@ -118,6 +121,14 @@ from the Python package `art/themes/<id>/`. A package draws in one of two ways:
   shapes with an ink outline. Y2k draws glossy bodies with a white shine: a
   `Critter` gives its body and face position, and the kit adds the eyes, mouth,
   blush and status marks.
+- **Raster**: the package sets `RASTER = True` and draws PNG files with any
+  Python engine (Pillow, skia-python, pycairo). `SPRITES`, `SCENES` and `ICONS`
+  work as for vector, but give PNG bytes, and the files end in `.png`. Set
+  `artExt: "png"` in the theme's `theme.js` so the mod loads them. Draw sprites
+  at 2x (320 x 256) and scenes at 576 x 480, so they stay sharp. Noir draws
+  black cutout critters with skia-python: a `Critter` gives its silhouette,
+  its few pale or red details and its face position, and the kit adds the
+  backlight rim, the eyes, the mouth and the status marks.
 
 Edit the art, then:
 
@@ -126,8 +137,12 @@ uv run --no-project art/generate.py --theme <id>     # default: retro
 ./install.sh
 ```
 
+A raster theme needs its engine: add it with `--with`. Noir:
+`uv run --no-project --with pillow --with skia-python art/generate.py --theme noir`.
+
 `art/preview.py` draws a sheet of every sprite in every pose
-(`art/preview-sprites.png`). Vector themes also need resvg:
+(`art/preview-sprites.png`). Vector themes also need resvg; raster themes need
+only Pillow:
 
 ```sh
 uv run --no-project --with pillow art/preview.py --theme retro
@@ -136,7 +151,7 @@ uv run --no-project --with pillow --with resvg-py art/preview.py --theme y2k out
 
 ## Fonts
 
-Retro uses Silkscreen and VT323. Edo uses Shippori Mincho and Yuji Syuku, cut
+Retro and Noir use Silkscreen and VT323. Edo uses Shippori Mincho and Yuji Syuku, cut
 to the Latin letters with `pyftsubset` so the files stay small. Y2k uses
 Orbitron and Share Tech Mono. All are under the SIL Open Font License (see
 `mods/herdr-critters/fonts/LICENSE-*.txt`).
