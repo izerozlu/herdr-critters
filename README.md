@@ -19,7 +19,9 @@ A Herdr desktop app mod: the Agents sidebar as retro pixel cards.
 - Click a card to focus its pane. Hover to pin or unpin.
 - A narrow sidebar (under 160 px) shows only the sprite boxes.
 - The look is a theme. The header button next to `BY MACHINE` shows the active
-  theme (`RETRO`); click it to switch to the next one. Only `retro` ships today.
+  theme (`RETRO`); click it to switch to the next one. Two themes ship: `retro`
+  (dark pixel critters) and `edo` (an ukiyo-e print on washi paper, with
+  Japanese food and objects as the critters).
 
 ![Herdr critters](preview.png)
 
@@ -51,10 +53,12 @@ A symlink does not work: Herdr does not load a mod's images through one.
 
 ## Art
 
-The sprites, scenes and icons are ASCII grids. `art/generate.py` is the engine;
-each theme's grids live in `art/themes/<id>/`. The SVGs go to
-`mods/herdr-critters/themes/<id>/art/`. `art/preview.py` draws a sheet of them
-(`art/preview-sprites.png`). Edit a grid, then:
+`art/generate.py` is the engine; each theme's art lives in `art/themes/<id>/`.
+Retro's sprites, scenes and icons are ASCII grids. Edo is a vector theme: its
+package draws the SVG itself (woodblock shapes with an ink outline, see
+`art/themes/edo/kit.py`). The SVGs go to `mods/herdr-critters/themes/<id>/art/`.
+`art/preview.py` draws a sheet of them (`art/preview-sprites.png`; a vector theme
+needs `--with resvg-py`). Edit the art, then:
 
 ```sh
 uv run --no-project art/generate.py --theme retro
@@ -77,6 +81,7 @@ mods/herdr-critters/
     retro/
       theme.js        colors, scenes, status words, names, fonts, art path
       art/            the SVGs
+    edo/              same layout
 ```
 
 The chosen theme id is shared state (`herdr-critters.theme`). A missing or
@@ -96,9 +101,10 @@ unknown id falls back to `retro`. Retro keeps its names in `localStorage` key
 
 ## Fonts
 
-Silkscreen and VT323, both under the SIL Open Font License (see
-`mods/herdr-critters/fonts/LICENSE-*.txt`). Herdr loads them from the mod's
-`fonts/` folder.
+Retro uses Silkscreen and VT323. Edo uses Shippori Mincho and Yuji Syuku, cut
+to the Latin letters with `pyftsubset` so the files stay small. All are under
+the SIL Open Font License (see `mods/herdr-critters/fonts/LICENSE-*.txt`).
+Herdr loads them from the mod's `fonts/` folder.
 
 ## Limits
 

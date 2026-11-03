@@ -1,12 +1,14 @@
 """Draw a preview sheet of sprites in every pose, each on its status scene.
 
 Run from the repo root after generate.py:
-    uv run --no-project --with pillow art/preview.py [--theme <id>] [out.png] [name ...]
+    uv run --no-project --with pillow --with resvg-py art/preview.py [--theme <id>] [out.png] [name ...]
+(resvg-py is needed only for a vector theme.)
 Reads mods/herdr-critters/themes/<id>/art (theme default: retro). Without names it draws
 every sprite. CRITTERS_ART=<dir> reads another art folder. Default output: art/preview-sprites.png
 """
 
 import argparse
+import io
 import os
 import re
 from pathlib import Path
@@ -22,6 +24,12 @@ RECT = re.compile(r'<rect x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)" fill=
 def raster(path: Path, scale: int) -> Image.Image:
     text = path.read_text()
     w, h = map(int, re.search(r'viewBox="0 0 (\d+) (\d+)"', text).groups())
+    if 'shape-rendering="crispEdges"' not in text:  # a vector picture, drawn at the grid's size
+        import resvg_py
+
+        w, h = map(int, re.search(r'width="(\d+)" height="(\d+)"', text).groups())
+        png = resvg_py.svg_to_bytes(svg_string=text, width=w * scale // 8, height=h * scale // 8)
+        return Image.open(io.BytesIO(bytes(png))).convert("RGBA")
     im = Image.new("RGBA", (w * scale, h * scale), (0, 0, 0, 0))
     draw = ImageDraw.Draw(im)
     for x, y, rw, rh, fill in RECT.findall(text):

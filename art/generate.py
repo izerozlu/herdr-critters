@@ -10,6 +10,12 @@ exports these names (see art/themes/retro):
 Each picture is an ASCII grid: one character
 per pixel, "." is transparent. Output goes to mods/herdr-critters/themes/<id>/art/.
 
+A vector theme (see art/themes/edo) sets VECTOR = True and draws its own SVG text:
+  SPRITES                  name -> a function of the status that gives the sprite's SVG
+  BATCHES                  the sprite batches, each with its own SPRITES
+  SCENES, ICONS            name -> SVG text
+It needs none of the grid names.
+
 Run from the repo root:
     uv run --no-project art/generate.py [--theme <id>]            (default: retro)
     uv run --no-project art/generate.py --theme <id> --batch <name> <dir>
@@ -136,11 +142,17 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
     for old in out.glob("sprite-*.svg"):
         old.unlink()
-    poses = {f"{name}-{status}": pose(theme, name, status) for name in names for status in STATUSES}
-    for group, items in (("sprite", poses), ("scene", theme.SCENES), ("icon", theme.ICONS)):
-        for name, (palette, rows) in items.items():
-            (out / f"{group}-{name}.svg").write_text(svg(palette, rows))
-    print(f"wrote {len(poses) + len(theme.SCENES) + len(theme.ICONS)} files to {out}")
+    if getattr(theme, "VECTOR", False):  # the theme draws its own SVG text
+        sprites = {f"{name}-{status}": theme.SPRITES[name](status) for name in names for status in STATUSES}
+        scenes, icons = theme.SCENES, theme.ICONS
+    else:
+        sprites = {f"{name}-{status}": svg(*pose(theme, name, status)) for name in names for status in STATUSES}
+        scenes = {name: svg(*pic) for name, pic in theme.SCENES.items()}
+        icons = {name: svg(*pic) for name, pic in theme.ICONS.items()}
+    for group, items in (("sprite", sprites), ("scene", scenes), ("icon", icons)):
+        for name, text in items.items():
+            (out / f"{group}-{name}.svg").write_text(text)
+    print(f"wrote {len(sprites) + len(scenes) + len(icons)} files to {out}")
 
 
 if __name__ == "__main__":
