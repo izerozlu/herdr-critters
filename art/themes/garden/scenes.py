@@ -1,121 +1,90 @@
-"""Garden scenes (the sprite box behind each agent, one per machine and per status) and icons."""
+"""Garden scenes (the sprite box behind each agent, one per machine and per status) and icons.
 
-# 36 x 30 grids.
-SCENE_W, SCENE_H, GROUND = 36, 30, 7
+A scene is a felt picture of 288 x 240 units: a felt backdrop, a stitched sun and cloud,
+two layered felt hills and felt flowers at the sides. The mod puts the sprite's feet on
+the front hill, about 7/30 up from the bottom (y ~ 186).
+"""
 
+import math
 
-def scene(
-    sky: list[str], sun: str, petal: str, grass: list[str], soil: list[str], ink: str
-) -> tuple[dict[str, str], list[str]]:
-    """Sky bands on top, a sun, a cloud, two flowers on a grass line, then soil.
+import numpy as np
 
-    `ink` is not drawn in the scene; it colors the machine icon.
-    """
-    pal = {
-        "a": sky[0], "b": sky[1], "c": sky[2], "s": sun, "w": "#fffdf5", "p": petal,
-        "g": grass[0], "G": grass[1], "B": soil[0], "m": soil[1], "i": ink,
-    }
-    rows: list[str] = []
-    sky_rows = SCENE_H - GROUND
-    for y in range(sky_rows):
-        band = "a" if y < sky_rows * 0.45 else "b" if y < sky_rows * 0.8 else "c"
-        rows.append(band * SCENE_W)
+from .kit import SS, Canvas, felt, inset, mask, noise, outline_of, qbez, rgb, stitch, thread_of
 
-    def dot(x: int, y: int, ch: str) -> None:
-        rows[y] = rows[y][:x] + ch + rows[y][x + 1 :]
-
-    # A round sun with short rays, top right, clear of the status marks on the left.
-    for x, y in ((3, 2), (4, 2), (2, 3), (3, 3), (4, 3), (5, 3), (2, 4), (3, 4), (4, 4), (5, 4), (3, 5), (4, 5)):
-        dot(SCENE_W - 1 - x, y, "s")
-    for x, y in ((3, 0), (4, 0), (0, 3), (0, 4), (7, 3), (7, 4), (3, 7), (4, 7)):
-        dot(SCENE_W - 1 - x, y, "s")
-    # A cloud, top left.
-    for x in range(6, 10):
-        dot(x, 3, "w")
-    for x in range(4, 12):
-        dot(x, 4, "w")
-    # Grass tufts on the horizon and a flower near each edge.
-    for x in range(0, SCENE_W, 3):
-        dot(x, sky_rows - 1, "g")
-    for cx in (2, 33):
-        dot(cx, sky_rows - 4, "p")
-        dot(cx - 1, sky_rows - 3, "p")
-        dot(cx, sky_rows - 3, "s")
-        dot(cx + 1, sky_rows - 3, "p")
-        dot(cx, sky_rows - 2, "p")
-        dot(cx, sky_rows - 1, "G")
-    rows.append("g" * SCENE_W)
-    rows.append("".join("G" if x % 2 else "g" for x in range(SCENE_W)))
-    for y in range(2, GROUND):
-        rows.append("".join("m" if (x * 7 + y * 5) % 13 == 0 else "B" for x in range(SCENE_W)))
-    return pal, rows
+W, H = 288, 240
 
 
-SCENES = {
-    "greenhouse": scene(["#e8f1dc", "#ddebcd", "#d1e4be"], "#ffd166", "#f29bb6", ["#8cc56a", "#6aa84f"], ["#a07a52", "#80603e"], "#4f8a3c"),
-    "barrow": scene(["#fbeee0", "#f7e2cc", "#f2d5b6"], "#ffc35a", "#e88a5a", ["#9cc46a", "#7aa84c"], ["#a07a52", "#80603e"], "#a0522d"),
-    "seeds": scene(["#efe8f5", "#e6dcef", "#dccfe8"], "#ffd88a", "#b48ad8", ["#8cc06e", "#6ea452"], ["#9a7a5a", "#7a5c40"], "#7a5aa8"),
-    "pond": scene(["#e2f0f5", "#d4e8f0", "#c4dfeb"], "#ffe08a", "#7ab8e0", ["#86c27a", "#64a45c"], ["#94785a", "#74593e"], "#2f7aa8"),
+def scene(bg: str, hill: str, ground: str) -> dict:
+    return {"bg": bg, "hill": hill, "ground": ground}
+
+
+def draw_scene(s: dict) -> bytes:
+    cv = Canvas(W, H)
+    fib = noise(cv.shape, 0.5 * SS, 1, octaves=2)
+    mott = noise(cv.shape, 8 * SS, 2, octaves=2)
+    cv.c[:] = rgb(s["bg"]) * (0.93 + 0.08 * fib[..., None] + 0.04 * mott[..., None])
+    cv.a[:] = 1
+    sun = ("circle", 258, 38, 17)
+    felt(cv, mask(W, H, [sun]), "#f6c64a", 5, puff=5, drop=2)
+    stitch(cv, inset(outline_of(sun), 3), thread_of("#f6c64a"))
+    cloud = [("ellipse", 150, 26, 20, 9), ("ellipse", 162, 19, 12, 10), ("ellipse", 142, 21, 9, 7)]
+    felt(cv, mask(W, H, cloud), "#fbf7ee", 6, puff=4, drop=1.6)
+    for top, color, seed in (
+        (qbez((0, 156), (80, 124), (160, 160)) + qbez((160, 160), (230, 138), (288, 148)), s["hill"], 7),
+        (qbez((-2, 190), (144, 178), (290, 192)), s["ground"], 8),
+    ):
+        felt(cv, mask(W, H, [("poly", [(0, 240)] + top + [(288, 240)])]), color, seed, puff=7, drop=2.3)
+        stitch(cv, [(x, y + 4) for x, y in top], thread_of(color))
+    for x, y, petal in ((24, 170, "#ef8fb0"), (266, 166, "#f5c445"), (276, 184, "#ef8fb0"), (12, 186, "#f5c445")):
+        felt(cv, mask(W, H, [("line", [(x, y), (x + 1, y + 30)], 2.2)]), "#5f8a46", x, puff=1, drop=0.8)
+        petals = [("circle", x + 5 * math.cos(a), y + 5 * math.sin(a), 4.2) for a in np.linspace(0, 2 * math.pi, 5, endpoint=False)]
+        felt(cv, mask(W, H, petals), petal, x + 1, puff=3, drop=1.2)
+        felt(cv, mask(W, H, [("circle", x, y, 2.6)]), "#a0642e" if petal == "#f5c445" else "#f5c445", x + 2, puff=1.5, drop=0.5)
+    return cv.png(2)
+
+
+PALETTES = {
+    # One per machine, in the theme.js scene colors (card, edge, box).
+    "greenhouse": scene("#e9f0dc", "#c9dbb2", "#a9c88e"),
+    "barrow": scene("#f6ead8", "#e5cfb0", "#d4b088"),
+    "seeds": scene("#efe8f3", "#d9cbe6", "#bca6d6"),
+    "pond": scene("#e4eff3", "#c4dce6", "#9cc4d8"),
     # The sprite box behind an agent shows its status; the machine scenes above
-    # color the machine icons. Light enough that every outlined sprite still reads.
-    "idle": scene(["#efeadb", "#e8e2d0", "#e0d9c4"], "#e8d9a0", "#d8c8d8", ["#a8b890", "#8e9e78"], ["#a89478", "#8c7a60"], "#8c8471"),
-    "working": scene(["#fdf3d0", "#fbeab8", "#f8e0a0"], "#f5b82e", "#f29b6b", ["#9ccc5e", "#7fb048"], ["#9c7650", "#7d5c3a"], "#b87400"),
-    "blocked": scene(["#fbe3e0", "#f7d4d0", "#f2c3be"], "#f5a07a", "#e0505a", ["#b8b46a", "#9a9850"], ["#8e6a4c", "#6e4e34"], "#cc3b3b"),
-    "done": scene(["#e3f5e0", "#d4efcf", "#c4e8bf"], "#ffd166", "#f29bb6", ["#6cbf5a", "#4f9f40"], ["#9c7650", "#7d5c3a"], "#3d8b37"),
+    # color the machine icons. Light felt, so every critter reads.
+    "idle": scene("#e6dfca", "#c6c3a6", "#a5a886"),
+    "working": scene("#f7e3a4", "#bcd69c", "#8ec272"),
+    "blocked": scene("#f4c3b8", "#dfc79e", "#bba97a"),
+    "done": scene("#d4ecbe", "#a8d790", "#76b864"),
 }
 
 # ---- icons
 
-# A machine icon per scene, 10 x 7. F is the frame (the scene's ink), S the glass
-# or body (the scene's lightest sky band), s an accent (the sun), D wood or soil.
-SHAPES = {
-    "greenhouse": [
-        "....FF....",
-        "..FFSSFF..",
-        "FFSSSSSSFF",
-        "FSSFSSFSSF",
-        "FSSFSSFSSF",
-        "FFFFFFFFFF",
-        "DDDDDDDDDD",
-    ],
-    "barrow": [
-        "........DD",
-        "FFFFFFFDD.",
-        "FSSSSSSF..",
-        ".FSSSSF...",
-        "..FFFF....",
-        "..FsF.D...",
-        "..FFF.D...",
-    ],
-    "seeds": [
-        ".FFFFFFFF.",
-        ".FSSsSSSF.",
-        ".FSsDsSSF.",
-        ".FSSsSSSF.",
-        ".FSSDSSSF.",
-        ".FSSDSSSF.",
-        ".FFFFFFFF.",
-    ],
-    # The watering can, also used by the status scenes.
-    "pond": [
-        ".FFFF.....",
-        "F....F...s",
-        "FFFFFFF.F.",
-        "FSSSSSFF..",
-        "FSSSSSF...",
-        "FSSSSSF...",
-        "FFFFFFF...",
-    ],
+# The pot and flower colors each machine icon takes: (pot, flower).
+_TONES = {
+    "greenhouse": ("#4f8a3c", "#f5c445"), "barrow": ("#a0522d", "#ef8fb0"), "seeds": ("#7a5aa8", "#f5c445"), "pond": ("#2f7aa8", "#fbf3e2"),
+    "idle": ("#8c8471", "#e6dfca"), "working": ("#b87400", "#f5c445"), "blocked": ("#cc3b3b", "#f4c3b8"), "done": ("#3d8b37", "#f5c445"),
 }
 
-ICONS = {
-    # The header's dither block.
-    "dither": ({"x": "#b8ae90"}, ["x.x.x.", ".x.x.x", "x.x.x.", ".x.x.x", "x.x.x.", ".x.x.x"]),
-    **{
-        f"machine-{name}": (
-            {"F": pal["i"], "S": pal["a"], "s": pal["s"], "D": pal["m"]},
-            SHAPES.get(name, SHAPES["pond"]),
-        )
-        for name, (pal, _rows) in SCENES.items()
-    },
-}
+
+def flowerpot(pot: str, flower: str) -> bytes:
+    """A machine: a felt flower pot, 30 x 22, in the scene's colors."""
+    cv = Canvas(30, 22)
+    felt(cv, mask(30, 22, [("line", [(15, 13), (15, 6)], 1.4)]), "#5f8a46", 1, puff=0.6, drop=0.3, fuzz=0.3)
+    felt(cv, mask(30, 22, [("ellipse", 11, 9, 3.2, 1.6), ("ellipse", 19, 8, 3.2, 1.6)]), "#6fae4a", 2, puff=0.8, drop=0.3, fuzz=0.3)
+    felt(cv, mask(30, 22, [("circle", 15, 4.5, 3.6)]), flower, 3, puff=1, drop=0.4, fuzz=0.3)
+    felt(cv, mask(30, 22, [("poly", [(8, 13), (22, 13), (20, 21), (10, 21)])]), pot, 4, puff=1.4, drop=0.5, fuzz=0.3)
+    felt(cv, mask(30, 22, [("rect", 6.5, 11.5, 23.5, 15)]), pot, 5, puff=1, drop=0.5, fuzz=0.3)
+    return cv.png(2)
+
+
+def daisy() -> bytes:
+    """The header's mark: a felt flower, 12 x 12."""
+    cv = Canvas(12, 12)
+    petals = [("circle", 6 + 3 * math.cos(a), 6 + 3 * math.sin(a), 2.4) for a in np.linspace(0, 2 * math.pi, 5, endpoint=False)]
+    felt(cv, mask(12, 12, petals), "#ef8fb0", 1, puff=1, drop=0.3, fuzz=0.2)
+    felt(cv, mask(12, 12, [("circle", 6, 6, 1.8)]), "#f5c445", 2, puff=0.6, drop=0.2, fuzz=0.2)
+    return cv.png(3)
+
+
+SCENES = {name: draw_scene(s) for name, s in PALETTES.items()}
+ICONS = {"dither": daisy(), **{f"machine-{name}": flowerpot(*tone) for name, tone in _TONES.items()}}

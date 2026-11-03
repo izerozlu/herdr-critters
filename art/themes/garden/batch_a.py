@@ -1,119 +1,59 @@
-"""Sprites batch A: nibbles, flutter, bramble, wiggle."""
+"""Sprites batch A: dotty, buzz, shelly, ribbit."""
 
-SPRITES: dict[str, tuple[dict[str, str], list[str]]] = {
-    "nibbles": (
-        {"o": "#4a3526", "g": "#9ad06a", "G": "#5f9a3c", "h": "#c4e47e", "k": "#2a1e16", "p": "#f29bb6"},
-        [
-            "....................",
-            "....................",
-            "....................",
-            "............o...o...",
-            ".............o.o....",
-            "...........ooooooo..",
-            "..........ohhhhhhho.",
-            "..........ohkhhhkho.",
-            "..........ohkhhhkho.",
-            "..ooo.ooo.ohhhhhhho.",
-            ".ogggogggoohhhhhhho.",
-            "oggggggggggohhhhho..",
-            "ogGggGggGggoooooo...",
-            "oggggggggggggggggo..",
-            ".oooooooooooooooo...",
-            "..o.o..o.o..o.o.....",
-        ],
-    ),
-    "flutter": (
-        {"o": "#4a3526", "p": "#f29bb6", "y": "#ffd166", "l": "#f7c6d9", "h": "#fbe6c8", "b": "#5a3e5a", "k": "#2a1e16", "r": "#e8607a"},
-        [
-            "......o......o......",
-            ".......o....o.......",
-            "...oo.oooooooo.oo...",
-            "..oppoohhhhhhooppo..",
-            "..opypohkhhkhopypo..",
-            "..opypohkhhkhopypo..",
-            "..opppohhhhhhopppo..",
-            "..opppoohhhhoopppo..",
-            "...opppoobboopppo...",
-            "....ooooobbooooo....",
-            "...ollllobbollllo...",
-            "...olyllobbollylo...",
-            "...ollllobbollllo...",
-            "....ooo.obbo.ooo....",
-            "........obbo........",
-            ".........oo.........",
-        ],
-    ),
-    "bramble": (
-        {"o": "#4a3526", "S": "#8a5a3a", "s": "#b48460", "f": "#f4dcb4", "n": "#3a2a20", "k": "#2a1e16", "p": "#f29bb6"},
-        [
-            "....................",
-            ".....o..o..o..o.....",
-            "....oSooSooSooSo....",
-            "...oSSSSSSSSSSSSo...",
-            "..oSSsSSsSSsSSsSSo..",
-            ".oSSSSSSSSSSSSSSSSo.",
-            ".oSSSffffffffffSSSo.",
-            ".oSSffffffffffffSSo.",
-            ".oSSffkffffffkffSSo.",
-            ".oSSffkffffffkffSSo.",
-            "oSSSffffffffffffSSSo",
-            "oSSSfffffnnfffffSSSo",
-            "oSSSffffffffffffSSSo",
-            ".oSSSffffffffffSSSo.",
-            "..oooooooooooooooo..",
-            "...offo......offo...",
-        ],
-    ),
-    "wiggle": (
-        {"o": "#4a3526", "w": "#f4a3b4", "W": "#d87890", "g": "#7cc35a", "k": "#2a1e16", "p": "#e8607a"},
-        [
-            "..........oggo......",
-            "...........oo.......",
-            ".........ooooo......",
-            "........owwwwwo.....",
-            ".......owkwwwkwo....",
-            ".......owkwwwkwo....",
-            ".......owwwwwwwo....",
-            "........owwwwwo.....",
-            "........owWWwo......",
-            ".......owwwwo.......",
-            "......owWWwo........",
-            ".....owwwwo.........",
-            "....owwwwo....ooo...",
-            "...owwwwwwwwwwwwwo..",
-            "...owwWwwwWwwwWwwo..",
-            "....ooooooooooooo...",
-        ],
-    ),
-}
+from .kit import cord, oval, piece, pose, qbez, spiral
 
-POSES: dict[str, dict] = {
-    "nibbles": {
-        "face": "h", "line": "k", "eyes": [(12, 7), (16, 7)],
-        "idle": [],
-        "working": [(12, 3, "U"), (16, 3, "U")],
-        "blocked": [(14, 9, "k")],
-        "done": [(11, 9, "p"), (17, 9, "p"), (13, 9, "kkk")],
+DARK = "#3d3436"
+_DOTTY_SHELL = ("ellipse", 80, 94, 46, 31)
+_BUZZ_BODY = ("ellipse", 80, 84, 37, 38)
+
+CRITTERS = {
+    "dotty": {  # a ladybug
+        "parts": [
+            cord(DARK, [(58, 112), (48, 127)], 4.5),
+            cord(DARK, [(102, 112), (112, 127)], 4.5),
+            cord(DARK, [(72, 42), (62, 24)], 3.2),
+            cord(DARK, [(88, 42), (98, 24)], 3.2),
+            piece(DARK, ("circle", 61, 23, 4.2), ("circle", 99, 23, 4.2), puff=2, seam=False),
+            piece("#e0574e", _DOTTY_SHELL),
+            piece(DARK, ("circle", 58, 86, 7.5), ("circle", 102, 86, 7.5), ("circle", 54, 108, 6), ("circle", 106, 108, 6),
+                  ("circle", 70, 116, 5), ("circle", 90, 116, 5), clip=[_DOTTY_SHELL], patch=True),
+            cord(DARK, [(80, 70), (80, 124)], 2.4),
+            piece(DARK, ("ellipse", 80, 56, 26, 21)),
+        ],
+        "pose": pose([(70, 54), (90, 54)], (80, 66), [(62, 64), (98, 64)], light=True),
     },
-    "flutter": {
-        "face": "h", "line": "k", "eyes": [(8, 4), (11, 4)],
-        "idle": [],
-        "working": [(6, 0, "U"), (13, 0, "U")],
-        "blocked": [(9, 6, "kk")],
-        "done": [(7, 6, "r"), (12, 6, "r"), (8, 6, "k"), (11, 6, "k"), (9, 7, "kk")],
+    "buzz": {  # a bumblebee
+        "parts": [
+            piece("#d8ecef", ("poly", oval(54, 46, 21, 14, -30))),
+            piece("#d8ecef", ("poly", oval(106, 46, 21, 14, 30))),
+            cord("#7a4e30", [(70, 50), (60, 30)], 3),
+            cord("#7a4e30", [(90, 50), (100, 30)], 3),
+            piece("#7a4e30", ("circle", 59, 29, 4), ("circle", 101, 29, 4), ("ellipse", 66, 123, 7, 4), ("ellipse", 94, 123, 7, 4), puff=2, seam=False),
+            piece("#f5c445", _BUZZ_BODY),
+            piece("#7a4e30", ("rect", 30, 95, 130, 104), ("rect", 30, 110, 130, 119), clip=[_BUZZ_BODY], patch=True),
+        ],
+        "pose": pose([(68, 72), (92, 72)], (80, 84), [(59, 82), (101, 82)], r=4.8),
     },
-    "bramble": {
-        "face": "f", "line": "k", "eyes": [(6, 8), (13, 8)],
-        "idle": [],
-        "working": [],
-        "blocked": [(9, 12, "kk")],
-        "done": [(5, 10, "p"), (14, 10, "p"), (8, 12, "k"), (11, 12, "k"), (9, 13, "kk")],
+    "shelly": {  # a snail
+        "parts": [
+            piece("#efd3a0", ("poly", [(18, 126)] + qbez((18, 126), (24, 108), (60, 110)) + [(126, 108), (134, 126)]), seam=False),
+            cord("#efd3a0", [(110, 56), (103, 37)], 3.2),
+            cord("#efd3a0", [(122, 56), (127, 37)], 3.2),
+            piece("#efd3a0", ("circle", 103, 36, 4.4), ("circle", 127, 36, 4.4), puff=2, seam=False),
+            piece("#d98448", ("circle", 66, 80, 35)),
+            cord("#8a4824", spiral(68, 82, 2, 27, 2.2, start=3.6), 2.6),
+            piece("#efd3a0", ("ellipse", 116, 86, 18, 34)),
+        ],
+        "pose": pose([(110, 72), (123, 72)], (116.5, 84), [(104, 82), (129, 82)], r=4.2),
     },
-    "wiggle": {
-        "face": "w", "line": "k", "eyes": [(9, 4), (13, 4)],
-        "idle": [],
-        "working": [(11, 0, "U")],
-        "blocked": [(11, 6, "k")],
-        "done": [(8, 6, "p"), (14, 6, "p"), (10, 6, "kkk")],
+    "ribbit": {  # a frog
+        "parts": [
+            piece("#6fae4a", ("ellipse", 42, 123, 15, 5), ("ellipse", 118, 123, 15, 5), puff=2, seam=False),
+            piece("#8cc85a", ("circle", 56, 62, 15), ("circle", 104, 62, 15)),
+            piece("#8cc85a", ("ellipse", 80, 96, 52, 30)),
+            piece("#e2efb4", ("ellipse", 80, 106, 32, 16)),
+            piece("#fbf3e2", ("circle", 56, 62, 9), ("circle", 104, 62, 9), puff=2, seam=False),
+        ],
+        "pose": pose([(56, 62), (104, 62)], (80, 86), [(48, 84), (112, 84)], r=5.6),
     },
 }
