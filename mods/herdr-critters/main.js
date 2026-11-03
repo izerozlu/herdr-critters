@@ -5,37 +5,9 @@ import { View, div, image, svg } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
 import { agents, terminals, spaces, machines, run, setAgentOrder, layout, shared, setShared, theme } from "herdr";
 import { webcrypto } from "crypto";
+import { DEFAULT_THEME, themeById } from "./themes/index.js";
 
-const ART = "mods/herdr-critters/art";
-const PIXEL = "Silkscreen";
-const MONO = "VT323";
-
-// The retro palette is the point of this mod, so it doesn't follow the theme.
-const C = {
-  bg: "#12131b",
-  head: "#6b6f82",
-  machine: "#e8922e",
-  focus: "#e8922e",
-  text: "#f1ecff",
-  sub: "#9a95b0",
-};
-
-// A scene per machine: this machine gets dusk, others take the rest in turn.
-const SCENES = {
-  dusk: { card: "#1f1830", edge: "#3e2f5c", box: "#4b3870", label: "#b49be0" },
-  den: { card: "#181d26", edge: "#2a3442", box: "#34465a", label: "#8fb3c8" },
-  dawn: { card: "#221819", edge: "#4a2e2a", box: "#6a3e30", label: "#e8b48c" },
-  moss: { card: "#161e19", edge: "#2a3e2e", box: "#3a5a3a", label: "#a8d890" },
-};
-const REMOTE_SCENES = ["den", "dawn", "moss"];
-
-const STATUS = {
-  working: { word: "BUSY", color: "#5ee6f2" },
-  blocked: { word: "HELP!", color: "#ff5a5a" },
-  done: { word: "DONE", color: "#9be36a" },
-  idle: { word: "IDLE", color: "#a9a3bf" },
-};
-const statusOf = (s) => STATUS[s] ?? STATUS.idle;
+const activeTheme = () => themeById(DEFAULT_THEME);
 
 function find(node, id) {
   if (node?.id === id) return node;
@@ -56,13 +28,6 @@ const machineOf = (a) => (a.address.includes("/") ? a.address.split("/")[0] : nu
 const pickRandom = (arr) => arr[webcrypto.getRandomValues(new Uint32Array(1))[0] % arr.length];
 
 const clean = (s) => (s ?? "").replace(/^[^\p{L}\p{N}]+/u, "").trim();
-
-// Every agent's name, a character to follow: 4 to 7 letters each.
-const NAMES = [
-  "pixel", "byte", "nova", "rook", "ziggy", "mochi", "bolt", "echo", "juno", "kiwi",
-  "luma", "miso", "nimbus", "onyx", "pepper", "quill", "rusty", "sprout", "tango", "umbra",
-  "vega", "waffle", "yeti", "zephyr", "comet", "dusty", "fable", "gizmo", "hopper", "ivory",
-];
 
 // The session's name: the terminal's core name, else the title the agent gives
 // its terminal when that says more than the program's name or a folder.
@@ -90,20 +55,40 @@ const kidStatus = (k, listed) => {
   return s === "error" ? "blocked" : s === "done" ? "idle" : s;
 };
 
-const pixel = (el, size, color) => el.font_family(PIXEL).text_size(size).text_color(color);
+// Where a theme's picked names are stored. A theme can set `namesKey` to keep an old key
+// (retro keeps "names" so current users keep their names).
+const namesKey = (look) => look.namesKey ?? `names.${look.id}`;
 
 export default class RetroAgents extends View {
   init() {
     this.hovered = null;
-    // Each agent's picked name, kept across restarts so it doesn't change under you.
-    this.picked = JSON.parse(localStorage.getItem("names") ?? "{}");
+    this.look = null;
+    this.picked = {};
   }
 
-  // One name from NAMES per agent, never two the same: an agent keeps its picked
+  // The status entry for an agent's word; an unknown word reads as idle.
+  statusOf(s) {
+    return this.look.status[s] ?? this.look.status.idle;
+  }
+
+  pixel(el, size, color) {
+    return el.font_family(this.look.fonts.pixel).text_size(size).text_color(color);
+  }
+
+  // Take the theme and load its picked names, kept across restarts so a name
+  // doesn't change under you.
+  useTheme(look) {
+    if (this.look) return;
+    this.look = look;
+    this.picked = JSON.parse(localStorage.getItem(namesKey(look)) ?? "{}");
+  }
+
+  // One name from the theme's names per agent, never two the same: an agent keeps its picked
   // name while no earlier agent holds it, else gets a random free one.
   names(list) {
     const out = new Map();
     const taken = new Set();
+    const NAMES = this.look.names;
     let dirty = false;
     for (const a of list) {
       let name = this.picked[a.address];
@@ -119,20 +104,21 @@ export default class RetroAgents extends View {
       taken.add(unique);
       out.set(a.address, unique);
     }
-    if (dirty) localStorage.setItem("names", JSON.stringify(this.picked));
+    if (dirty) localStorage.setItem(namesKey(this.look), JSON.stringify(this.picked));
     return out;
   }
 
   // The sprite box: scene, sprite, and the corner badge that tells the state at a glance.
-  // `name` is the agent's NAMES name: each name has its own sprite.
+  // `name` is the agent's picked name: each name has its own sprite.
   stage(a, scene, w, h, name) {
+    const { art, colors: C, status: STATUS } = this.look;
     const st = a.status;
     const spriteW = Math.round(w * 0.66);
     const spriteH = Math.round(spriteW * 0.8);
     const left = Math.round((w - spriteW) / 2);
     // Feet on the bricks: the scene's ground is its bottom 7 of 30 rows.
     const top = h - Math.round(h * (7 / 30)) - spriteH + 2;
-    const sprite = image(`${ART}/sprite-${name}-${STATUS[st] ? st : "idle"}.svg`).absolute().left(left).top(top).w(spriteW).h(spriteH);
+    const sprite = image(`${art}/sprite-${name}-${STATUS[st] ? st : "idle"}.svg`).absolute().left(left).top(top).w(spriteW).h(spriteH);
     const badge = div()
       .absolute()
       .top(3)
@@ -141,13 +127,13 @@ export default class RetroAgents extends View {
       .flex()
       .items_center()
       .justify_center()
-      .bg("#0b0b12cc")
+      .bg(C.badgeBg)
       .border(1)
-      .border_color(st === "idle" ? "#8a849e" : statusOf(st).color);
+      .border_color(st === "idle" ? C.idleEdge : this.statusOf(st).color);
     const mark = {
-      idle: () => pixel(div(), 9, "#d8d2ee").frames(["z", "z", "Z", "Z"], 450),
-      working: () => pixel(div(), 9, STATUS.working.color).frames(["▘", "▝", "▗", "▖"], 140),
-      blocked: () => pixel(div(), 10, STATUS.blocked.color).child("!").loop("opacity", { from: 0.25, to: 1, period: 700 }),
+      idle: () => this.pixel(div(), 9, C.idleMark).frames(["z", "z", "Z", "Z"], 450),
+      working: () => this.pixel(div(), 9, STATUS.working.color).frames(["▘", "▝", "▗", "▖"], 140),
+      blocked: () => this.pixel(div(), 10, STATUS.blocked.color).child("!").loop("opacity", { from: 0.25, to: 1, period: 700 }),
       done: () => div().text_size(10).font_bold().text_color(STATUS.done.color).child("✓"),
     }[st] ?? (() => div());
     return div()
@@ -157,14 +143,15 @@ export default class RetroAgents extends View {
       .flex_none()
       .overflow_hidden()
       .border(2)
-      .border_color(st === "idle" ? scene.box : statusOf(st).color + "99")
-      .child(image(`${ART}/scene-${STATUS[st] ? st : "idle"}.svg`).absolute().left(0).top(0).w(w - 4).h(h - 4))
+      .border_color(st === "idle" ? scene.box : this.statusOf(st).color + C.statusEdgeAlpha)
+      .child(image(`${art}/scene-${STATUS[st] ? st : "idle"}.svg`).absolute().left(0).top(0).w(w - 4).h(h - 4))
       .child(st === "working" ? sprite.loop("top", { from: top, to: top - 3, period: 520 }) : sprite)
       .child(badge.child(mark()));
   }
 
   card(a, scene, tabs, name, session) {
-    const s = statusOf(a.status);
+    const { colors: C, status: STATUS, fonts } = this.look;
+    const s = this.statusOf(a.status);
     const hot = this.hovered === a.address;
     const edge = a.focused ? C.focus : a.status === "blocked" ? STATUS.blocked.color : scene.edge;
     const pin = div()
@@ -212,9 +199,9 @@ export default class RetroAgents extends View {
             h_flex()
               .gap(6)
               .items_center()
-              .child(div().flex_1().min_w(0).font_family(MONO).text_size(20).line_height("18px").text_color(C.text).truncate().child(name))
+              .child(div().flex_1().min_w(0).font_family(fonts.mono).text_size(20).line_height("18px").text_color(C.text).truncate().child(name))
               .child(
-                pixel(div(), 10, s.color)
+                this.pixel(div(), 10, s.color)
                   .flex_none()
                   .mt(-1)
                   .px(5)
@@ -222,7 +209,7 @@ export default class RetroAgents extends View {
                   .flex()
                   .items_center()
                   .border(1)
-                  .border_color(a.status === "idle" ? "#6a6380" : s.color)
+                  .border_color(a.status === "idle" ? C.idleBox : s.color)
                   .child(s.word),
               ),
           )
@@ -239,7 +226,8 @@ export default class RetroAgents extends View {
   }
 
   kidRow(k, depth, listed) {
-    const s = statusOf(kidStatus(k, listed));
+    const { colors: C, status: STATUS } = this.look;
+    const s = this.statusOf(kidStatus(k, listed));
     return h_flex()
       .id(`sub-${k.address}`)
       .flex_none()
@@ -249,14 +237,34 @@ export default class RetroAgents extends View {
       .gap(6)
       .items_center()
       .cursor_pointer()
-      .hover((el) => el.bg("#ffffff0d"))
+      .hover((el) => el.bg(C.rowHover))
       .on_click(() => run("terminal.peek", { terminal: k.address }))
-      .child(pixel(div(), 10, C.head).child("└"))
+      .child(this.pixel(div(), 10, C.head).child("└"))
       .child(div().flex_1().min_w(0).truncate().text_size(11.5).text_color(C.sub).child(k.name || k.template || k.program?.name || k.address))
-      .child(pixel(div(), 8, s.color).child(s.word));
+      .child(this.pixel(div(), 8, s.color).child(s.word));
+  }
+
+  // A small outlined button in the top bar.
+  headerButton(id, tooltip, onClick, label) {
+    const C = this.look.colors;
+    return this.pixel(div(), 9, C.sub)
+      .id(id)
+      .flex_none()
+      .px(4)
+      .h(15)
+      .flex()
+      .items_center()
+      .border(1)
+      .border_color(C.btnEdge)
+      .cursor_pointer()
+      .hover((el) => el.text_color(C.text).border_color(C.sub))
+      .tooltip(tooltip)
+      .on_click(onClick)
+      .child(label);
   }
 
   header(g) {
+    const { art, colors: C } = this.look;
     const busy = g.members.filter((a) => a.status === "working").length;
     return h_flex()
       .flex_none()
@@ -265,14 +273,15 @@ export default class RetroAgents extends View {
       .px(2)
       .gap(7)
       .items_center()
-      .child(image(`${ART}/icon-machine-${g.scene.id}.svg`).w(15).h(11).flex_none())
-      .child(pixel(div(), 11, g.color ?? C.machine).font_bold().truncate().child(g.label))
+      .child(image(`${art}/icon-machine-${g.scene.id}.svg`).w(15).h(11).flex_none())
+      .child(this.pixel(div(), 11, g.color ?? C.machine).font_bold().truncate().child(g.label))
       .child(div().flex_1().min_w(8).h(2).bg(g.scene.edge))
-      .child(pixel(div(), 11, g.scene.label).flex_none().child(`${busy}/${g.members.length}`));
+      .child(this.pixel(div(), 11, g.scene.label).flex_none().child(`${busy}/${g.members.length}`));
   }
 
   // The rail: one small stage per agent.
   rail(list, sceneOf) {
+    const C = this.look.colors;
     return v_flex()
       .size_full()
       .bg(C.bg)
@@ -283,18 +292,21 @@ export default class RetroAgents extends View {
       .children(list.map((a) => div()
         .id(`rail-${a.address}`)
         .border(2)
-        .border_color(a.focused ? C.focus : "#00000000")
+        .border_color(a.focused ? C.focus : C.clear)
         .cursor_pointer()
         .on_click(() => run("pane.focus", { pane: a.pane }))
         .child(this.stage(a, sceneOf(a), 36, 30, this.picked[a.address]))));
   }
 
   render() {
+    const look = activeTheme();
+    this.useTheme(look);
+    const { art, colors: C, status: STATUS } = look;
     const order = [null, ...machines().map((m) => m.name).filter((n) => n !== null)];
     const sceneOf = (a) => {
       const m = machineOf(a);
-      const id = m === null ? "dusk" : REMOTE_SCENES[Math.max(0, order.indexOf(m) - 1) % REMOTE_SCENES.length];
-      return { id, ...SCENES[id] };
+      const id = m === null ? look.localScene : look.remoteScenes[Math.max(0, order.indexOf(m) - 1) % look.remoteScenes.length];
+      return { id, ...look.scenes[id] };
     };
 
     // agents() comes in machine, space order, so neighbours make a group either way.
@@ -341,7 +353,7 @@ export default class RetroAgents extends View {
       .min_h(0)
       .bg(C.bg)
       .border_t(1)
-      .border_color("#22232e")
+      .border_color(C.divider)
       .child(
         h_flex()
           .flex_none()
@@ -351,28 +363,14 @@ export default class RetroAgents extends View {
           .items_center()
           .justify_between()
           .child(h_flex().gap(8).items_center()
-            .child(image(`${ART}/icon-dither.svg`).size(12).flex_none())
-            .child(pixel(div(), 11, C.head).child("AGENTS"))
-            .child(
-              pixel(div(), 9, C.sub)
-                .id("critters-group")
-                .px(4)
-                .h(15)
-                .flex()
-                .items_center()
-                .border(1)
-                .border_color("#34364a")
-                .cursor_pointer()
-                .hover((el) => el.text_color(C.text).border_color(C.sub))
-                .tooltip("Group agents by machine or by space")
-                .on_click(() => setShared(GROUP_KEY, bySpace ? "machine" : "space"))
-                .child(bySpace ? "BY SPACE" : "BY MACHINE"),
-            ))
-          .child(pixel(div(), 11, busy ? STATUS.working.color : C.head).child(`${busy} BUSY`)),
+            .child(image(`${art}/icon-dither.svg`).size(12).flex_none())
+            .child(this.pixel(div(), 11, C.head).child("AGENTS"))
+            .child(this.headerButton("critters-group", "Group agents by machine or by space", () => setShared(GROUP_KEY, bySpace ? "machine" : "space"), bySpace ? "BY SPACE" : "BY MACHINE")))
+          .child(this.pixel(div(), 11, busy ? STATUS.working.color : C.head).child(`${busy} BUSY`)),
       )
       .when(list.length === 0, (el) =>
         el.child(v_flex().px(14).pt(10).gap(6)
-          .child(pixel(div(), 11, C.machine).child("NO PLAYERS YET"))
+          .child(this.pixel(div(), 11, C.machine).child("NO PLAYERS YET"))
           .child(div().text_size(11.5).text_color(C.sub).child("Agents show up here when they report their status."))))
       .child(v_flex().id("critters-list").flex_1().min_h(0).px(10).pb(10).gap(8).overflow_y_scrollbar().children(rows));
   }
