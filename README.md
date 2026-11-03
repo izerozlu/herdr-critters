@@ -1,3 +1,5 @@
+![Herdr critters](preview.png)
+
 # herdr-critters
 
 A Herdr desktop app mod: the Agents sidebar as cards with a critter for each
@@ -23,7 +25,6 @@ Y2K or neon cyberpunk.
 - The look is a theme (see [Themes](#themes)). The header button next to
   `BY MACHINE` shows the active theme (`RETRO`); click it to switch to the next.
 
-![Herdr critters](preview.png)
 
 ## Install
 
