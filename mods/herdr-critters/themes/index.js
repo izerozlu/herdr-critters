@@ -2,7 +2,8 @@
 
 import edo from "./edo/theme.js";
 import retro from "./retro/theme.js";
+import y2k from "./y2k/theme.js";
 
-export const THEMES = [retro, edo];
+export const THEMES = [retro, edo, y2k];
 export const DEFAULT_THEME = "retro";
 export const themeById = (id) => THEMES.find((t) => t.id === id) ?? THEMES.find((t) => t.id === DEFAULT_THEME);
