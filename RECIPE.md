@@ -77,13 +77,15 @@ Scenes by machine: this machine is `dusk` (purple), other machines take `den`
   `workspace-chrome`.
 - **Programs, network, files**: none. It does not run programs, reach the
   network or read files outside its own folder.
-- **Art**: SVG pixel art in `mods/herdr-critters/themes/<id>/art/`: one sprite
+- **Art**: SVGs in `mods/herdr-critters/themes/<id>/art/`: one sprite
   per name and status (`sprite-<name>-<status>.svg`), a scene per status
   (`scene-<status>.svg`), a machine icon per scene (`icon-machine-<scene>.svg`)
-  and `icon-dither.svg`. Made from ASCII grids by
-  `uv run --no-project art/generate.py --theme <id>` (default `retro`), with the
-  grids in `art/themes/<id>/`.
-- **Fonts**: Silkscreen and VT323 (SIL Open Font License) in `fonts/`.
+  and `icon-dither.svg`. Made by
+  `uv run --no-project art/generate.py --theme <id>` (default `retro`) from
+  `art/themes/<id>/`: ASCII grids for retro (pixel art), drawing code for edo
+  (vector woodblock prints).
+- **Fonts**: Silkscreen and VT323 (retro), Shippori Mincho and Yuji Syuku cut
+  to Latin letters (edo), all SIL Open Font License, in `fonts/`.
 
 ## Themes
 
