@@ -8,11 +8,11 @@ exports these names (see art/themes/retro):
   BANG, SWEAT, CHECK, BOLT small glyph grids placed next to a sprite by status
   SCENES, ICONS            full pictures, each as (palette, rows)
 Each picture is an ASCII grid: one character
-per pixel, "." is transparent. Output goes to mods/herdr-critters/themes/retro/art/.
+per pixel, "." is transparent. Output goes to mods/herdr-critters/themes/<id>/art/.
 
 Run from the repo root:
-    uv run --no-project art/generate.py
-    uv run --no-project art/generate.py --batch <name> <dir>
+    uv run --no-project art/generate.py [--theme <id>]            (default: retro)
+    uv run --no-project art/generate.py --theme <id> --batch <name> <dir>
 The second form draws only that sprite batch into <dir>, leaving the mod's art alone.
 """
 
@@ -28,8 +28,8 @@ sys.path.insert(0, str(ROOT))
 STATUSES = ("idle", "working", "blocked", "done")
 
 
-def load_theme() -> ModuleType:
-    return importlib.import_module("art.themes.retro")
+def load_theme(theme_id: str) -> ModuleType:
+    return importlib.import_module(f"art.themes.{theme_id}")
 
 
 def put(rows: list[str], x: int, y: int, text: str) -> None:
@@ -120,10 +120,16 @@ def svg(palette: dict[str, str], rows: list[str]) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    parser.add_argument("--theme", default="retro", help="theme id, a package under art/themes/")
     parser.add_argument("--batch", nargs=2, metavar=("NAME", "DIR"), help="only that sprite batch, into DIR")
     args = parser.parse_args()
-    theme = load_theme()
-    names, out = list(theme.SPRITES), ROOT / "mods" / "herdr-critters" / "themes" / "retro" / "art"
+    try:
+        theme = load_theme(args.theme)
+    except ModuleNotFoundError as exc:
+        if exc.name != f"art.themes.{args.theme}":
+            raise
+        parser.error(f"unknown theme: {args.theme}")
+    names, out = list(theme.SPRITES), ROOT / "mods" / "herdr-critters" / "themes" / args.theme / "art"
     if args.batch:
         names = list(theme.BATCHES[args.batch[0]].SPRITES)
         out = Path(args.batch[1])
