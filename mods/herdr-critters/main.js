@@ -5,9 +5,10 @@ import { View, div, image, svg } from "gpui-kit";
 import { v_flex, h_flex } from "gpui-base";
 import { agents, terminals, spaces, machines, run, setAgentOrder, layout, shared, setShared, theme } from "herdr";
 import { webcrypto } from "crypto";
-import { DEFAULT_THEME, themeById } from "./themes/index.js";
+import { THEMES, themeById } from "./themes/index.js";
 
-const activeTheme = () => themeById(DEFAULT_THEME);
+const THEME_KEY = "herdr-critters.theme";
+const activeTheme = () => themeById(shared(THEME_KEY));
 
 function find(node, id) {
   if (node?.id === id) return node;
@@ -75,10 +76,10 @@ export default class RetroAgents extends View {
     return el.font_family(this.look.fonts.pixel).text_size(size).text_color(color);
   }
 
-  // Take the theme and load its picked names, kept across restarts so a name
-  // doesn't change under you.
+  // Switch to the active theme; each theme keeps its own picked names, kept across
+  // restarts so a name doesn't change under you.
   useTheme(look) {
-    if (this.look) return;
+    if (this.look?.id === look.id) return;
     this.look = look;
     this.picked = JSON.parse(localStorage.getItem(namesKey(look)) ?? "{}");
   }
@@ -250,7 +251,7 @@ export default class RetroAgents extends View {
     return this.pixel(div(), 9, C.sub)
       .id(id)
       .flex_none()
-      .px(4)
+      .px(3)
       .h(15)
       .flex()
       .items_center()
@@ -362,11 +363,12 @@ export default class RetroAgents extends View {
           .pt(6)
           .items_center()
           .justify_between()
-          .child(h_flex().gap(8).items_center()
+          .child(h_flex().flex_1().min_w(0).overflow_hidden().gap(5).items_center()
             .child(image(`${art}/icon-dither.svg`).size(12).flex_none())
-            .child(this.pixel(div(), 11, C.head).child("AGENTS"))
-            .child(this.headerButton("critters-group", "Group agents by machine or by space", () => setShared(GROUP_KEY, bySpace ? "machine" : "space"), bySpace ? "BY SPACE" : "BY MACHINE")))
-          .child(this.pixel(div(), 11, busy ? STATUS.working.color : C.head).child(`${busy} BUSY`)),
+            .child(this.pixel(div(), 11, C.head).flex_none().child("AGENTS"))
+            .child(this.headerButton("critters-group", "Group agents by machine or by space", () => setShared(GROUP_KEY, bySpace ? "machine" : "space"), bySpace ? "BY SPACE" : "BY MACHINE"))
+            .child(this.headerButton("critters-theme", "Switch the look of the cards", () => setShared(THEME_KEY, THEMES[(THEMES.indexOf(look) + 1) % THEMES.length].id), look.label)))
+          .child(this.pixel(div(), 11, busy ? STATUS.working.color : C.head).flex_none().child(`${busy} BUSY`)),
       )
       .when(list.length === 0, (el) =>
         el.child(v_flex().px(14).pt(10).gap(6)
