@@ -5,6 +5,7 @@ export default {
   id: "garden",
   label: "GARDEN",
   art: "mods/herdr-critters/themes/garden/art",
+  artExt: "png",
   fonts: { pixel: "Silkscreen", mono: "VT323" },
   colors: {
     bg: "#f6f1e0",
