@@ -1,8 +1,8 @@
 # herdr-critters
 
 A Herdr desktop app mod: the Agents sidebar as cards with a critter for each
-agent. The look is a theme: retro pixel art, an Edo woodblock print or glossy
-Y2K.
+agent. The look is a theme: retro pixel art, an Edo woodblock print, glossy
+Y2K or neon cyberpunk.
 
 - One card per agent: a sprite, the agent's name with its status box (the
   theme's word, for example `IDLE`, `BUSY`, `HELP!`, `DONE` in retro) beside
@@ -53,7 +53,7 @@ A symlink does not work: Herdr does not load a mod's images through one.
 
 ## Themes
 
-Six themes ship. Each has its own names and critters (30, or 12 in noir,
+Seven themes ship. Each has its own names and critters (30, or 12 in noir,
 deepsea and garden), colors, scenes, status words and fonts.
 
 | Theme | Look | Status words | Fonts |
@@ -64,6 +64,7 @@ deepsea and garden), colors, scenes, status words and fonts.
 | `noir` | A 1940s detective city at night: 12 critters in costume as black cutouts against an office window with venetian blinds, all grays with one blood red. Raster PNG art. | `QUIET` `SNOOP` `HEAT!` `SOLVED` | Silkscreen, VT323 |
 | `deepsea` | A bioluminescent deep sea at night: 12 sea creatures as soft see-through gel that glows from inside, over dark water with light shafts. | `DRIFT` `DIVE` `SOS!` `DOCK` | Silkscreen, VT323 |
 | `garden` | A light cottage garden as a felt craft toy: 12 garden bugs and small animals in puffy matte felt with running stitches, felt hills and flowers. | `REST` `GROW` `WILT!` `BLOOM` | Silkscreen, VT323 |
+| `cyber` | Neon cyberpunk: cute vector mascots (cyborg animals, drones, androids, hackers) with holo chrome and neon lights, a night city skyline over a grid floor. | `AFK` `HACK` `PING!` `SYNC` | Orbitron, Share Tech Mono |
 
 ### How theming works
 
@@ -92,6 +93,7 @@ mods/herdr-critters/
     noir/             same layout
     deepsea/          same layout
     garden/           same layout
+    cyber/            same layout
 ```
 
 The chosen theme id is shared state (`herdr-critters.theme`). A missing or
@@ -118,13 +120,15 @@ from the Python package `art/themes/<id>/`. A package draws in one of three ways
 - **Pixel grids** (retro): the package exports ASCII grids, one character per
   pixel, and per-status poses. The engine turns them into SVG and adds the
   status marks. See the `generate.py` docstring for the names a package exports.
-- **Vector** (edo, y2k): the package sets `VECTOR = True` and draws the SVG
+- **Vector** (edo, y2k, cyber): the package sets `VECTOR = True` and draws the SVG
   text itself: `SPRITES` maps a name to a function of the status, and `SCENES`
   and `ICONS` map a name to SVG text. Each vector package has a `kit.py` with
   one face engine, so every critter poses the same way. Edo draws woodblock
   shapes with an ink outline. Y2k draws glossy bodies with a white shine: a
   `Critter` gives its body and face position, and the kit adds the eyes, mouth,
-  blush and status marks.
+  blush and status marks. Cyber draws flat mascots with an ink outline, cel
+  shadows, holo gradients and neon glows: each critter is a function of the
+  status, and the kit gives it the eyes, mouth and status marks.
 - **Raster**: the package sets `RASTER = True` and draws PNG files with any
   Python engine (Pillow, skia-python, pycairo). `SPRITES`, `SCENES` and `ICONS`
   work as for vector, but give PNG bytes, and the files end in `.png`. Set
@@ -166,8 +170,8 @@ uv run --no-project --with pillow --with resvg-py art/preview.py --theme y2k out
 ## Fonts
 
 Retro, Noir, Deepsea and Garden use Silkscreen and VT323. Edo uses Shippori Mincho and Yuji Syuku, cut
-to the Latin letters with `pyftsubset` so the files stay small. Y2k uses
-Orbitron and Share Tech Mono. All are under the SIL Open Font License (see
+to the Latin letters with `pyftsubset` so the files stay small. Y2k and cyber
+use Orbitron and Share Tech Mono. All are under the SIL Open Font License (see
 `mods/herdr-critters/fonts/LICENSE-*.txt`).
 Herdr loads them from the mod's `fonts/` folder.
 
