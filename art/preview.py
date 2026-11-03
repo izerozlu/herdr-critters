@@ -13,7 +13,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
-ART = Path(os.environ.get("CRITTERS_ART", ROOT / "mods" / "herdr-critters" / "art"))
+ART = Path(os.environ.get("CRITTERS_ART", ROOT / "mods" / "herdr-critters" / "themes" / "retro" / "art"))
 FONT = ROOT / "mods" / "herdr-critters" / "fonts" / "Silkscreen-Regular.ttf"
 STATUSES = ("idle", "working", "blocked", "done")
 RECT = re.compile(r'<rect x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)" fill="(#\w+)"/>')
