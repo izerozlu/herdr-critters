@@ -53,14 +53,15 @@ A symlink does not work: Herdr does not load a mod's images through one.
 
 ## Themes
 
-Three themes ship. Each has its own 30 names and critters, colors, scenes,
-status words and fonts.
+Four themes ship. Each has its own names and critters (30, or 12 in noir), colors,
+scenes, status words and fonts.
 
 | Theme | Look | Status words | Fonts |
 | --- | --- | --- | --- |
 | `retro` (default) | Dark pixel arcade: pixel critters, a dusk sky over bricks. | `IDLE` `BUSY` `HELP!` `DONE` | Silkscreen, VT323 |
 | `edo` | An ukiyo-e woodblock print on washi paper: Japanese food and objects as vector critters with an ink outline. | `IDLE` `BUSY` `HELP!` `DONE` | Shippori Mincho, Yuji Syuku |
 | `y2k` | Glossy Aqua, about 2000 to 2005: vector critters with a white shine, a wallpaper sky over green hills, a light silver panel. | `BRB` `SYNC` `OMG!` `W00T` | Orbitron, Share Tech Mono |
+| `noir` | A 1940s detective city at night: 12 pixel critters in costume, all grays with one blood red, rain over cobbles. | `QUIET` `SNOOP` `HEAT!` `SOLVED` | Silkscreen, VT323 |
 
 ### How theming works
 
@@ -86,6 +87,7 @@ mods/herdr-critters/
       art/            the SVGs
     edo/              same layout
     y2k/              same layout
+    noir/          same layout
 ```
 
 The chosen theme id is shared state (`herdr-critters.theme`). A missing or
@@ -108,7 +110,7 @@ unknown id falls back to `retro`. Retro keeps its names in `localStorage` key
 `art/generate.py` writes a theme's SVGs to `mods/herdr-critters/themes/<id>/art/`
 from the Python package `art/themes/<id>/`. A package draws in one of two ways:
 
-- **Pixel grids** (retro): the package exports ASCII grids, one character per
+- **Pixel grids** (retro, noir): the package exports ASCII grids, one character per
   pixel, and per-status poses. The engine turns them into SVG and adds the
   status marks. See the `generate.py` docstring for the names a package exports.
 - **Vector** (edo, y2k): the package sets `VECTOR = True` and draws the SVG
@@ -136,7 +138,7 @@ uv run --no-project --with pillow --with resvg-py art/preview.py --theme y2k out
 
 ## Fonts
 
-Retro uses Silkscreen and VT323. Edo uses Shippori Mincho and Yuji Syuku, cut
+Retro and Noir use Silkscreen and VT323. Edo uses Shippori Mincho and Yuji Syuku, cut
 to the Latin letters with `pyftsubset` so the files stay small. Y2k uses
 Orbitron and Share Tech Mono. All are under the SIL Open Font License (see
 `mods/herdr-critters/fonts/LICENSE-*.txt`).
