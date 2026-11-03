@@ -1,19 +1,19 @@
 """Draw a preview sheet of sprites in every pose, each on its status scene.
 
 Run from the repo root after generate.py:
-    uv run --no-project --with pillow art/preview.py [out.png] [name ...]
-Without names it draws every sprite. CRITTERS_ART=<dir> reads another art folder. Default output: art/preview-sprites.png
+    uv run --no-project --with pillow art/preview.py [--theme <id>] [out.png] [name ...]
+Reads mods/herdr-critters/themes/<id>/art (theme default: retro). Without names it draws
+every sprite. CRITTERS_ART=<dir> reads another art folder. Default output: art/preview-sprites.png
 """
 
+import argparse
 import os
 import re
-import sys
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
-ART = Path(os.environ.get("CRITTERS_ART", ROOT / "mods" / "herdr-critters" / "art"))
 FONT = ROOT / "mods" / "herdr-critters" / "fonts" / "Silkscreen-Regular.ttf"
 STATUSES = ("idle", "working", "blocked", "done")
 RECT = re.compile(r'<rect x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)" fill="(#\w+)"/>')
@@ -31,10 +31,13 @@ def raster(path: Path, scale: int) -> Image.Image:
 
 
 def main() -> None:
-    args = sys.argv[1:]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--theme", default="retro", help="theme id, a folder under mods/herdr-critters/themes/")
+    opts, args = parser.parse_known_args()
+    art = Path(os.environ.get("CRITTERS_ART", ROOT / "mods" / "herdr-critters" / "themes" / opts.theme / "art"))
     out = Path(args.pop(0)) if args and args[0].endswith(".png") else ROOT / "art" / "preview-sprites.png"
-    names = args or sorted({p.name.split("-")[1] for p in ART.glob("sprite-*-idle.svg")})
-    scenes = {s: raster(ART / f"scene-{s}.svg", 5) for s in STATUSES}  # 180 x 150
+    names = args or sorted({p.name.split("-")[1] for p in art.glob("sprite-*-idle.svg")})
+    scenes = {s: raster(art / f"scene-{s}.svg", 5) for s in STATUSES}  # 180 x 150
     cw, ch, lw, top = 200, 170, 90, 40
     font = ImageFont.truetype(str(FONT), 16)
     sheet = Image.new("RGBA", (lw + len(STATUSES) * cw, top + len(names) * ch), "#12131b")
@@ -46,7 +49,7 @@ def main() -> None:
         for c, status in enumerate(STATUSES):
             x, y = lw + c * cw, top + r * ch
             sheet.paste(scenes[status], (x, y), scenes[status])
-            sprite = raster(ART / f"sprite-{name}-{status}.svg", 6)  # 120 x 96
+            sprite = raster(art / f"sprite-{name}-{status}.svg", 6)  # 120 x 96
             sheet.paste(sprite, (x + 30, y + 150 - 35 - 96 + 6), sprite)
     sheet.save(out)
     print(out)

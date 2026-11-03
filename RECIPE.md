@@ -10,8 +10,11 @@ with its own sprite, standing in a pixel scene that changes with its status.
 The mod fills the layout's `agents` block, top to bottom:
 
 - **Header** (38 px): a dither icon, `AGENTS` in Silkscreen 11 px `#6b6f82`, a
-  `BY MACHINE` / `BY SPACE` toggle (Silkscreen 9 px, 1 px `#34364a` border), and
-  on the right `N BUSY` (cyan `#5ee6f2` when any agent works, else gray).
+  `BY MACHINE` / `BY SPACE` toggle (Silkscreen 9 px, 1 px `#34364a` border), a
+  theme button beside it (same style, shows the theme label, `RETRO`; click
+  cycles to the next theme), and on the right `N BUSY` (cyan `#5ee6f2` when any
+  agent works, else gray). The left group shrinks first, the busy count never
+  gets cut.
 - **Group headers** (30 px): a 15x11 machine icon, the group label in bold
   Silkscreen 11 px, a 2 px rule, and `busy/total`. By machine the label is
   `THIS MACHINE` or the machine name; by space it is the space name in capitals,
@@ -26,7 +29,8 @@ The mod fills the layout's `agents` block, top to bottom:
 - **Narrow sidebar** (sidebar under 160 px wide): only 36x30 sprite boxes in a
   column, the focused one with an orange border.
 
-Background `#12131b`. The palette is fixed and does not follow the theme.
+Background `#12131b`. The palette is fixed per theme and does not follow the
+Herdr theme. All of it comes from the active theme object (see Themes below).
 
 Scenes by machine: this machine is `dusk` (purple), other machines take `den`
 (blue-gray), `dawn` (rust) and `moss` (green) in turn.
@@ -37,8 +41,9 @@ Scenes by machine: this machine is `dusk` (purple), other machines take `den`
   nova, rook, ziggy, mochi, bolt, echo, juno, kiwi, luma, miso, nimbus, onyx,
   pepper, quill, rusty, sprout, tango, umbra, vega, waffle, yeti, zephyr, comet,
   dusty, fable, gizmo, hopper, ivory). The pick uses `crypto` random, never two
-  the same, and is kept in `localStorage` by agent address across restarts.
-  Past 30 agents a name repeats with a number (`pixel 2`) and shares a sprite.
+  the same, and is kept in `localStorage` by agent address across restarts (key
+  `names` for retro, `names.<id>` for other themes). Past 30 agents a name
+  repeats with a number (`pixel 2`) and shares a sprite.
 - **Status**, on the status box, sprite, scene and corner badge:
   - idle: `IDLE` gray, eyes shut, badge `z`/`Z` blinking.
   - working: `BUSY` cyan, a yellow bolt, badge a 4-frame spinner, the sprite
@@ -50,15 +55,18 @@ Scenes by machine: this machine is `dusk` (purple), other machines take `den`
 - Click a card to focus its pane (`pane.focus`). Hover shows a pin button; it
   runs `terminal.pin`. Pinned agents go first in their group.
 - Click a sub-agent row to peek at it (`terminal.peek`).
-- The group toggle is shared state (`herdr-critters.group`).
+- The group toggle is shared state (`herdr-critters.group`). The theme button
+  is shared state too (`herdr-critters.theme`, a theme id; unknown or missing
+  means `retro`).
 - The mod sets the agent order (`setAgentOrder`) to the order it shows.
 
 ## Built from
 
 - **Layout** `layouts/critters.json`: the shipped `main` layout with the
   `agents` block set to `{ "mod": "herdr-critters" }`.
-- **Mod** `mods/herdr-critters/`: `main.js` (one `View`), `mod.json`
-  (`place: none`), `art/`, `fonts/`.
+- **Mod** `mods/herdr-critters/`: `main.js` (one `View`, theme-agnostic),
+  `mod.json` (`place: none`), `themes/` (registry `index.js` and one folder per
+  theme with `theme.js` and `art/`), `fonts/`.
 - **herdr functions**: `agents`, `terminals`, `spaces`, `machines`, `layout`,
   `theme`, `shared`, `setShared`, `setAgentOrder`, `run`.
 - **Commands**: `pane.focus`, `terminal.pin`, `terminal.peek`.
@@ -66,7 +74,27 @@ Scenes by machine: this machine is `dusk` (purple), other machines take `den`
   `workspace-chrome`.
 - **Programs, network, files**: none. It does not run programs, reach the
   network or read files outside its own folder.
-- **Art**: SVG pixel art in `mods/herdr-critters/art/`: one sprite per name and
-  status (`sprite-<name>-<status>.svg`), a scene per status, machine icons and a
-  dither icon. Made from ASCII grids by `art/generate.py`.
+- **Art**: SVG pixel art in `mods/herdr-critters/themes/<id>/art/`: one sprite
+  per name and status (`sprite-<name>-<status>.svg`), a scene per status
+  (`scene-<status>.svg`), a machine icon per scene (`icon-machine-<scene>.svg`)
+  and `icon-dither.svg`. Made from ASCII grids by
+  `uv run --no-project art/generate.py --theme <id>` (default `retro`), with the
+  grids in `art/themes/<id>/`.
 - **Fonts**: Silkscreen and VT323 (SIL Open Font License) in `fonts/`.
+
+## Themes
+
+A theme is `themes/<id>/theme.js`, a default export of one object:
+
+- `id`, `label` (shown on the header button), `art` (art folder path),
+  `fonts` (`pixel`, `mono`), and optional `namesKey` (storage key for names).
+- `colors`: `bg`, `head`, `machine`, `focus`, `text`, `sub` and the rest the
+  view uses (badge, borders, hover, dividers).
+- `scenes` (each `card`, `edge`, `box`, `label`), `localScene` and
+  `remoteScenes`.
+- `status`: `working`, `blocked`, `done`, `idle`, each `{ word, color }`.
+- `names`: the 30 agent names; each needs its sprites in `art/`.
+
+`themes/index.js` exports `THEMES` (cycle order), `DEFAULT_THEME` (`retro`) and
+`themeById(id)` (unknown id gives the default). To add a theme: write
+`theme.js`, add the art, import it in `index.js` and add it to `THEMES`.
