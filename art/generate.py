@@ -1,4 +1,4 @@
-"""Generate a theme's pixel art (sprites, scenes, icons) as SVG.
+"""Generate a theme's art (sprites, scenes, icons) as SVG, or as PNG for a raster theme.
 
 The engine is theme-agnostic. A theme is a Python package art/themes/<id>/ that
 exports these names (see art/themes/retro):
@@ -15,6 +15,12 @@ A vector theme (see art/themes/edo) sets VECTOR = True and draws its own SVG tex
   BATCHES                  the sprite batches, each with its own SPRITES
   SCENES, ICONS            name -> SVG text
 It needs none of the grid names.
+
+A raster theme sets RASTER = True and draws PNG files with any engine it likes:
+  SPRITES                  name -> a function of the status that gives the sprite's PNG bytes
+  BATCHES                  the sprite batches, each with its own SPRITES
+  SCENES, ICONS            name -> PNG bytes
+Its files end in .png; set `artExt: "png"` in the theme's theme.js so the mod loads them.
 
 Run from the repo root:
     uv run --no-project art/generate.py [--theme <id>]            (default: retro)
@@ -140,9 +146,10 @@ def main() -> None:
         names = list(theme.BATCHES[args.batch[0]].SPRITES)
         out = Path(args.batch[1])
     out.mkdir(parents=True, exist_ok=True)
-    for old in out.glob("sprite-*.svg"):
+    for old in [*out.glob("sprite-*.svg"), *out.glob("sprite-*.png")]:
         old.unlink()
-    if getattr(theme, "VECTOR", False):  # the theme draws its own SVG text
+    raster = getattr(theme, "RASTER", False)
+    if raster or getattr(theme, "VECTOR", False):  # the theme draws its own SVG text or PNG bytes
         sprites = {f"{name}-{status}": theme.SPRITES[name](status) for name in names for status in STATUSES}
         scenes, icons = theme.SCENES, theme.ICONS
     else:
@@ -150,8 +157,11 @@ def main() -> None:
         scenes = {name: svg(*pic) for name, pic in theme.SCENES.items()}
         icons = {name: svg(*pic) for name, pic in theme.ICONS.items()}
     for group, items in (("sprite", sprites), ("scene", scenes), ("icon", icons)):
-        for name, text in items.items():
-            (out / f"{group}-{name}.svg").write_text(text)
+        for name, data in items.items():
+            if raster:
+                (out / f"{group}-{name}.png").write_bytes(data)
+            else:
+                (out / f"{group}-{name}.svg").write_text(data)
     print(f"wrote {len(sprites) + len(scenes) + len(icons)} files to {out}")
 
 

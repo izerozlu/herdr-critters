@@ -101,14 +101,15 @@ unknown id falls back to `retro`. Retro keeps its names in `localStorage` key
    the picked names are stored (default `names.<id>`; retro keeps `names`).
 2. Add the art in `themes/<id>/art/` (`sprite-<name>-<status>.svg` for every
    name, `scene-<status>.svg`, `icon-machine-<scene>.svg` for every scene,
-   `icon-dither.svg`). Make them with an art package (see [Art](#art)).
+   `icon-dither.svg`). Make them with an art package (see [Art](#art)). For
+   PNG art, the same names end in `.png`, and `theme.js` sets `artExt: "png"`.
 3. Import it in `themes/index.js` and add it to `THEMES`. The order is the
    cycle order of the header button.
 
 ## Art
 
-`art/generate.py` writes a theme's SVGs to `mods/herdr-critters/themes/<id>/art/`
-from the Python package `art/themes/<id>/`. A package draws in one of two ways:
+`art/generate.py` writes a theme's art to `mods/herdr-critters/themes/<id>/art/`
+from the Python package `art/themes/<id>/`. A package draws in one of three ways:
 
 - **Pixel grids** (retro, noir): the package exports ASCII grids, one character per
   pixel, and per-status poses. The engine turns them into SVG and adds the
@@ -120,6 +121,11 @@ from the Python package `art/themes/<id>/`. A package draws in one of two ways:
   shapes with an ink outline. Y2k draws glossy bodies with a white shine: a
   `Critter` gives its body and face position, and the kit adds the eyes, mouth,
   blush and status marks.
+- **Raster**: the package sets `RASTER = True` and draws PNG files with any
+  Python engine (Pillow, skia-python, pycairo). `SPRITES`, `SCENES` and `ICONS`
+  work as for vector, but give PNG bytes, and the files end in `.png`. Set
+  `artExt: "png"` in the theme's `theme.js` so the mod loads them. Draw sprites
+  at 2x (320 x 256) and scenes at 576 x 480, so they stay sharp.
 
 Edit the art, then:
 
@@ -128,8 +134,12 @@ uv run --no-project art/generate.py --theme <id>     # default: retro
 ./install.sh
 ```
 
+A raster theme needs its engine: add it with `--with`, for example
+`uv run --no-project --with pillow --with skia-python art/generate.py --theme <id>`.
+
 `art/preview.py` draws a sheet of every sprite in every pose
-(`art/preview-sprites.png`). Vector themes also need resvg:
+(`art/preview-sprites.png`). Vector themes also need resvg; raster themes need
+only Pillow:
 
 ```sh
 uv run --no-project --with pillow art/preview.py --theme retro

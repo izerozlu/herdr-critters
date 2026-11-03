@@ -54,6 +54,9 @@ const groupBy = () => (shared(GROUP_KEY) === "space" ? "space" : "machine");
 // (retro keeps "names" so current users keep their names).
 const namesKey = (look) => look.namesKey ?? `names.${look.id}`;
 
+// The art files' type: "svg" by default, "png" for a theme drawn as raster art.
+const artExt = (look) => look.artExt ?? "svg";
+
 export default class RetroAgents extends View {
   init() {
     this.hovered = null;
@@ -107,13 +110,14 @@ export default class RetroAgents extends View {
   // `name` is the agent's picked name: each name has its own sprite.
   stage(a, scene, w, h, name) {
     const { art, colors: C, status: STATUS } = this.look;
+    const ext = artExt(this.look);
     const st = a.status;
     const spriteW = Math.round(w * 0.66);
     const spriteH = Math.round(spriteW * 0.8);
     const left = Math.round((w - spriteW) / 2);
     // Feet on the bricks: the scene's ground is its bottom 7 of 30 rows.
     const top = h - Math.round(h * (7 / 30)) - spriteH + 2;
-    const sprite = image(`${art}/sprite-${name}-${STATUS[st] ? st : "idle"}.svg`).absolute().left(left).top(top).w(spriteW).h(spriteH);
+    const sprite = image(`${art}/sprite-${name}-${STATUS[st] ? st : "idle"}.${ext}`).absolute().left(left).top(top).w(spriteW).h(spriteH);
     const badge = div()
       .absolute()
       .top(3)
@@ -139,7 +143,7 @@ export default class RetroAgents extends View {
       .overflow_hidden()
       .border(2)
       .border_color(st === "idle" ? scene.box : this.statusOf(st).color + C.statusEdgeAlpha)
-      .child(image(`${art}/scene-${STATUS[st] ? st : "idle"}.svg`).absolute().left(0).top(0).w(w - 4).h(h - 4))
+      .child(image(`${art}/scene-${STATUS[st] ? st : "idle"}.${ext}`).absolute().left(0).top(0).w(w - 4).h(h - 4))
       .child(st === "working" ? sprite.loop("top", { from: top, to: top - 3, period: 520 }) : sprite)
       .child(badge.child(mark()));
   }
@@ -234,6 +238,7 @@ export default class RetroAgents extends View {
 
   header(g) {
     const { art, colors: C } = this.look;
+    const ext = artExt(this.look);
     const busy = g.members.filter((a) => a.status === "working").length;
     return h_flex()
       .flex_none()
@@ -242,7 +247,7 @@ export default class RetroAgents extends View {
       .px(2)
       .gap(7)
       .items_center()
-      .child(image(`${art}/icon-machine-${g.scene.id}.svg`).w(15).h(11).flex_none())
+      .child(image(`${art}/icon-machine-${g.scene.id}.${ext}`).w(15).h(11).flex_none())
       .child(this.pixel(div(), 11, g.color ?? C.machine).font_bold().truncate().child(g.label))
       .child(div().flex_1().min_w(8).h(2).bg(g.scene.edge))
       .child(this.pixel(div(), 11, g.scene.label).flex_none().child(`${busy}/${g.members.length}`));
@@ -271,6 +276,7 @@ export default class RetroAgents extends View {
     const look = activeTheme();
     this.useTheme(look);
     const { art, colors: C, status: STATUS } = look;
+    const ext = artExt(look);
     const order = [null, ...machines().map((m) => m.name).filter((n) => n !== null)];
     const sceneOf = (a) => {
       const m = machineOf(a);
@@ -328,7 +334,7 @@ export default class RetroAgents extends View {
           .items_center()
           .justify_between()
           .child(h_flex().flex_1().min_w(0).overflow_hidden().gap(5).items_center()
-            .child(image(`${art}/icon-dither.svg`).size(12).flex_none())
+            .child(image(`${art}/icon-dither.${ext}`).size(12).flex_none())
             .child(this.pixel(div(), 11, C.head).flex_none().child("AGENTS"))
             .child(this.headerButton("critters-group", "Group agents by machine or by space", () => setShared(GROUP_KEY, bySpace ? "machine" : "space"), bySpace ? "BY SPACE" : "BY MACHINE"))
             .child(this.headerButton("critters-theme", "Switch the look of the cards", () => setShared(THEME_KEY, THEMES[(THEMES.indexOf(look) + 1) % THEMES.length].id), look.label)))

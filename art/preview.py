@@ -2,7 +2,7 @@
 
 Run from the repo root after generate.py:
     uv run --no-project --with pillow --with resvg-py art/preview.py [--theme <id>] [out.png] [name ...]
-(resvg-py is needed only for a vector theme.)
+(resvg-py is needed only for a vector theme.) A raster theme's .png art is read as is.
 Reads mods/herdr-critters/themes/<id>/art (theme default: retro). Without names it draws
 every sprite. CRITTERS_ART=<dir> reads another art folder. Default output: art/preview-sprites.png
 """
@@ -21,7 +21,10 @@ STATUSES = ("idle", "working", "blocked", "done")
 RECT = re.compile(r'<rect x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)" fill="(#\w+)"/>')
 
 
-def raster(path: Path, scale: int) -> Image.Image:
+def raster(path: Path, scale: int, box: tuple[int, int]) -> Image.Image:
+    """The picture as an image: a .png scaled to fit `box`, an SVG drawn at `scale`."""
+    if path.suffix == ".png":
+        return Image.open(path).convert("RGBA").resize(box, Image.LANCZOS)
     text = path.read_text()
     w, h = map(int, re.search(r'viewBox="0 0 (\d+) (\d+)"', text).groups())
     if 'shape-rendering="crispEdges"' not in text:  # a vector picture, drawn at the grid's size
@@ -44,8 +47,9 @@ def main() -> None:
     opts, args = parser.parse_known_args()
     art = Path(os.environ.get("CRITTERS_ART", ROOT / "mods" / "herdr-critters" / "themes" / opts.theme / "art"))
     out = Path(args.pop(0)) if args and args[0].endswith(".png") else ROOT / "art" / "preview-sprites.png"
-    names = args or sorted({p.name.split("-")[1] for p in art.glob("sprite-*-idle.svg")})
-    scenes = {s: raster(art / f"scene-{s}.svg", 5) for s in STATUSES}  # 180 x 150
+    ext = "png" if any(art.glob("sprite-*-idle.png")) else "svg"
+    names = args or sorted({p.name.split("-")[1] for p in art.glob(f"sprite-*-idle.{ext}")})
+    scenes = {s: raster(art / f"scene-{s}.{ext}", 5, (180, 150)) for s in STATUSES}
     cw, ch, lw, top = 200, 170, 90, 40
     font = ImageFont.truetype(str(FONT), 16)
     sheet = Image.new("RGBA", (lw + len(STATUSES) * cw, top + len(names) * ch), "#12131b")
@@ -57,7 +61,7 @@ def main() -> None:
         for c, status in enumerate(STATUSES):
             x, y = lw + c * cw, top + r * ch
             sheet.paste(scenes[status], (x, y), scenes[status])
-            sprite = raster(art / f"sprite-{name}-{status}.svg", 6)  # 120 x 96
+            sprite = raster(art / f"sprite-{name}-{status}.{ext}", 6, (120, 96))
             sheet.paste(sprite, (x + 30, y + 150 - 35 - 96 + 6), sprite)
     sheet.save(out)
     print(out)
