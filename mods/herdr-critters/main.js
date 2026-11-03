@@ -50,12 +50,6 @@ function detail(a, tabs, session) {
 const GROUP_KEY = "herdr-critters.group";
 const groupBy = () => (shared(GROUP_KEY) === "space" ? "space" : "machine");
 
-// A sub-agent without a pane isn't in agents(): its raw word, error counting as blocked.
-const kidStatus = (k, listed) => {
-  const s = listed.get(k.address) ?? k.status;
-  return s === "error" ? "blocked" : s === "done" ? "idle" : s;
-};
-
 // Where a theme's picked names are stored. A theme can set `namesKey` to keep an old key
 // (retro keeps "names" so current users keep their names).
 const namesKey = (look) => look.namesKey ?? `names.${look.id}`;
@@ -219,32 +213,6 @@ export default class RetroAgents extends View {
       .when(hot || a.pinned, (el) => el.child(pin));
   }
 
-  // Live sub-agents of `addr`, depth first.
-  kids(all, addr, depth = 0) {
-    return all
-      .filter((k) => k.parent === addr && k.state === "live")
-      .flatMap((k) => [{ t: k, depth }, ...this.kids(all, k.address, depth + 1)]);
-  }
-
-  kidRow(k, depth, listed) {
-    const { colors: C, status: STATUS } = this.look;
-    const s = this.statusOf(kidStatus(k, listed));
-    return h_flex()
-      .id(`sub-${k.address}`)
-      .flex_none()
-      .h(22)
-      .pl(14 + depth * 10)
-      .pr(8)
-      .gap(6)
-      .items_center()
-      .cursor_pointer()
-      .hover((el) => el.bg(C.rowHover))
-      .on_click(() => run("terminal.peek", { terminal: k.address }))
-      .child(this.pixel(div(), 10, C.head).child("└"))
-      .child(div().flex_1().min_w(0).truncate().text_size(11.5).text_color(C.sub).child(k.name || k.template || k.program?.name || k.address))
-      .child(this.pixel(div(), 8, s.color).child(s.word));
-  }
-
   // A small outlined button in the top bar.
   headerButton(id, tooltip, onClick, label) {
     const C = this.look.colors;
@@ -336,17 +304,13 @@ export default class RetroAgents extends View {
     if (narrow()) return this.rail(list, sceneOf);
 
     const all = terminals();
-    const listed = new Map(list.map((a) => [a.address, a.status]));
     const tabs = spaces().flatMap((s) => s.tabs);
     const busy = list.filter((a) => a.status === "working").length;
     const byAddress = new Map(all.map((t) => [t.address, t]));
 
     const rows = groups.flatMap((g) => [
       this.header(g),
-      ...g.members.flatMap((a) => [
-        this.card(a, g.scene, tabs, names.get(a.address), sessionName(a, byAddress.get(a.address))),
-        ...this.kids(all, a.address).map((k) => this.kidRow(k.t, k.depth, listed)),
-      ]),
+      ...g.members.map((a) => this.card(a, g.scene, tabs, names.get(a.address), sessionName(a, byAddress.get(a.address)))),
     ]);
 
     return v_flex()

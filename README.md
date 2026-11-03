@@ -16,8 +16,7 @@ A Herdr desktop app mod: the Agents sidebar as retro pixel cards.
   the space's color from the Spaces list.
 - The corner badge moves: `z` when idle, a spinner when working, a blinking `!`
   when blocked, a check when done. Working sprites bob.
-- Click a card to focus its pane. Hover to pin or unpin. Sub-agents show as
-  small rows under their parent; click one to peek.
+- Click a card to focus its pane. Hover to pin or unpin.
 - A narrow sidebar (under 160 px) shows only the sprite boxes.
 - The look is a theme. The header button next to `BY MACHINE` shows the active
   theme (`RETRO`); click it to switch to the next one. Only `retro` ships today.

@@ -54,7 +54,6 @@ Scenes by machine: this machine is `dusk` (purple), other machines take `den`
 - The focused agent's card has an orange `#e8922e` border.
 - Click a card to focus its pane (`pane.focus`). Hover shows a pin button; it
   runs `terminal.pin`. Pinned agents go first in their group.
-- Click a sub-agent row to peek at it (`terminal.peek`).
 - The group toggle is shared state (`herdr-critters.group`). The theme button
   is shared state too (`herdr-critters.theme`, a theme id; unknown or missing
   means `retro`).

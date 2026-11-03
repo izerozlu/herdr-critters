@@ -21,7 +21,6 @@ export default {
     idleBox: "#6a6380",
     btnEdge: "#34364a",
     divider: "#22232e",
-    rowHover: "#ffffff0d",
     clear: "#00000000",
     // Appended to a status color for the sprite box border.
     statusEdgeAlpha: "99",
