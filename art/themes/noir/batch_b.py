@@ -1,0 +1,128 @@
+"""Sprites for rocco, lefty, mickey and dolly."""
+
+SPRITES: dict[str, tuple[dict[str, str], list[str]]] = {
+    # A bat in a fedora, wings folded like a cloak.
+    "rocco": (
+        {"H": "#3a3a44", "h": "#8a8a92", "F": "#8a8a94", "f": "#5a5a64", "w": "#e8e4d8", "k": "#16161a",
+         "t": "#f0ece0", "C": "#44444e", "c": "#6a6a76"},
+        [
+            "....................",
+            "......HHHHHHHH......",
+            "......HHHHHHHH......",
+            "......hhhhhhhh......",
+            "..HHHHHHHHHHHHHHHH..",
+            "...f.FFFFFFFFFF.f...",
+            "...ffFwwFFFFwwFff...",
+            "....fFwwFFFFwwFf....",
+            ".....FFFFkkFFFF.....",
+            ".....FFFtFFtFFF.....",
+            "...cCCCCFFFFCCCCc...",
+            "..cCCCCCCCCCCCCCCc..",
+            ".cCCcCCCCCCCCCCcCCc.",
+            "cCCc.CCCCCCCCCC.cCCc",
+            "c..c.CCCCCCCCCC.c..c",
+            "......ff....ff......",
+        ],
+    ),
+    # A one-eyed alley dog with an eye patch and a leather jacket.
+    "lefty": (
+        {"D": "#9c968c", "d": "#6a665e", "l": "#c8c4b8", "p": "#16161a", "s": "#2a2a2e", "w": "#e8e4d8",
+         "k": "#16161a", "n": "#1a1a1e", "j": "#4a4a52", "J": "#2e2e36"},
+        [
+            "....................",
+            "...dd........dd.....",
+            "...dDd......dDd.....",
+            "...dDDDDDDDDDDd.....",
+            "...dssssssssssd.....",
+            "...dDppDDDDwwDd.....",
+            "...dDppDDDDwkDd.....",
+            "...dDDDDDDDDDDd.....",
+            "....DDllllllDD......",
+            "....DDllnnllDD......",
+            ".....DllllllD.......",
+            "....jJJJJJJJjj......",
+            "...jjjjjjjjjjjj.....",
+            "...jjJjjjjjjJjj.....",
+            "...jjjjjjjjjjjj.dd..",
+            "....kk.....kk.......",
+        ],
+    ),
+    # A mouse newsboy with a cap and the late edition.
+    "mickey": (
+        {"M": "#a8a4a0", "m": "#c8b4b4", "d": "#6e6a66", "c": "#4a4a52", "C": "#2e2e36", "w": "#e8e4d8",
+         "k": "#16161a", "n": "#3a3a3e", "P": "#e8e4d8", "p": "#5a5a60", "v": "#5a5a62"},
+        [
+            "....................",
+            ".MMM........MMM.....",
+            "MmmmM......MmmmM....",
+            "MmmmMcccccccMmmmM...",
+            ".MMMcccccccccMMM....",
+            "....CCCCCCCCCC......",
+            "....MMwMMMMwMM......",
+            "....MMkMMMMkMM......",
+            "....MMMMnnMMMM......",
+            ".....MMMMMMMM.......",
+            "......vvvvvv.PPPPP..",
+            ".....vvvvvvvvPpppP..",
+            ".....vvvvvvvvPPPPP..",
+            ".....vvvvvvvvPpppP..",
+            "......vvvvvv.PPPPP..",
+            "......kk..kk........",
+        ],
+    ),
+    # A fox lounge singer: a sequin dress and a red rose by the ear.
+    "dolly": (
+        {"F": "#b0a698", "f": "#7e766a", "w": "#ece8dc", "k": "#16161a", "n": "#16161a", "D": "#3a3a44",
+         "d": "#8a8a96", "r": "#c8283a"},
+        [
+            "....................",
+            "....f........f......",
+            "....fF......Ff......",
+            "....fFF....FFf.rr...",
+            "....FFFFFFFFFFrrr...",
+            "...FFFFFFFFFFFFr....",
+            "...FFkFFFFFFkFF.....",
+            "...FFkFFFFFFkFF.....",
+            "...wFFFFFFFFFFw.....",
+            "....wwwwnnwwww......",
+            ".....wwwwwwww.......",
+            "......DdDDdD........",
+            ".....DDdDDdDD.......",
+            "....DdDDdDDdDD......",
+            "...DDDdDDDDdDDD..ff.",
+            "..DDdDDDDDDDDdDDfwf.",
+        ],
+    ),
+}
+
+# Same shape as base.POSES.
+POSES: dict[str, dict] = {
+    "rocco": {
+        "face": "F", "line": "f", "eyes": [(6, 6), (7, 6), (12, 6), (13, 6)],
+        "idle": [],
+        "working": [],
+        "blocked": [(9, 9, "kk")],
+        "done": [(8, 9, "tkkt")],
+    },
+    "lefty": {
+        "face": "D", "line": "d", "eyes": [(11, 5), (12, 5)],
+        "idle": [],
+        "working": [(17, 13, "dd"), (17, 14, "..")],
+        "blocked": [(7, 10, "kkkk")],
+        "done": [(6, 10, "k"), (11, 10, "k")],
+    },
+    "mickey": {
+        "face": "M", "line": "d", "eyes": [(6, 6), (11, 6)],
+        "idle": [],
+        "working": [(8, 9, "kk")],
+        "blocked": [(8, 9, "kk")],
+        "done": [(7, 9, "kMMk")],
+    },
+    "dolly": {
+        "face": "F", "line": "k", "eyes": [(5, 6), (12, 6)],
+        "idle": [],
+        "working": [(15, 1, "U"), (16, 0, "U")],
+        "blocked": [(8, 10, "kk")],
+        "done": [(7, 10, "kwwk")],
+    },
+}

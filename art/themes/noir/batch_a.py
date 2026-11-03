@@ -1,0 +1,128 @@
+"""Sprites for slick, dutch, marlow and velma."""
+
+SPRITES: dict[str, tuple[dict[str, str], list[str]]] = {
+    # A raccoon thief in a striped sweater, a sack over the shoulder.
+    "slick": (
+        {"G": "#8a8a92", "g": "#c8c8cc", "m": "#1c1c22", "w": "#e8e4d8", "k": "#16161a", "n": "#101014",
+         "S": "#2e2e36", "s": "#d8d4c8", "b": "#a8a090", "B": "#7e786c"},
+        [
+            "....................",
+            "....gg......gg......",
+            "....gGG....GGg......",
+            "....GGGGGGGGGG......",
+            "...GGGGGGGGGGGG.....",
+            "...mmmmmmmmmmmm.....",
+            "...mmwwmmmmwwmm.....",
+            "...mmwkmmmmkwmm.....",
+            "...GggggggggggG.....",
+            "....ggggnngggg......",
+            ".....SSSSSSSSS.bbb..",
+            "....sssssssssssbbbb.",
+            "....SSSSSSSSSSbbbbb.",
+            "....ssssssssssbBbbb.",
+            "....SSSSSSSSSS.BBB..",
+            ".....kk....kk.......",
+        ],
+    ),
+    # A bulldog cop: a peaked cap with a badge, jowls and a uniform.
+    "dutch": (
+        {"C": "#3a3c4a", "c": "#1e1e26", "b": "#d8d4c8", "F": "#b0aca4", "f": "#7e7a74", "w": "#e8e4d8",
+         "k": "#16161a", "n": "#16161a", "t": "#f0ece0", "V": "#44465a", "u": "#c8c4b8"},
+        [
+            "....................",
+            "......CCCCCCCC......",
+            ".....CCCCbbCCCC.....",
+            ".....CCCCbbCCCC.....",
+            "....cccccccccccc....",
+            "...fFFFFFFFFFFFFf...",
+            "...fFwwFFFFFFwwFf...",
+            "...fFkwFFFFFFwkFf...",
+            "..ffFFFFFnnFFFFFff..",
+            "..fffFFFFFFFFFFfff..",
+            "..fffftFFFFFFtffff..",
+            "...ffffffffffffff...",
+            "....VVVVVuVVVVVV....",
+            "....VbVVVVVVVVbV....",
+            "....VVVVVVVVVVVV....",
+            "....kkkk....kkkk....",
+        ],
+    ),
+    # An owl detective with a magnifying glass.
+    "marlow": (
+        {"O": "#8a8478", "o": "#c4beb0", "d": "#4e4a44", "w": "#e8e4d8", "k": "#16161a", "b": "#3a3a40",
+         "g": "#9aa4ae", "l": "#d8d4c8", "m": "#4a4a50"},
+        [
+            "....................",
+            "....d........d......",
+            "....dO......Od......",
+            "....OOOOOOOOOO......",
+            "...OwwwOOOOwwwO.....",
+            "...OwkwOOOOwkwO.....",
+            "...OwkwObbOwkwO.....",
+            "...OwwwOOOOwwwO.....",
+            "....OooooooooO......",
+            "...OOoodoodooOO.ll..",
+            "...OOooooooooOOlggl.",
+            "...OOoodoodooOOlggl.",
+            "....OOooooooOOm.ll..",
+            ".....OOOOOOOOm......",
+            "......OOOOOO........",
+            "......dd..dd........",
+        ],
+    ),
+    # A moth, the dame of the piece: big gray wings and red lips.
+    "velma": (
+        {"W": "#a8a49c", "w": "#6a665e", "s": "#e8e4d8", "B": "#d8d4c8", "b": "#a09c94", "k": "#16161a",
+         "r": "#c8283a", "a": "#7a7a84", "e": "#16161a"},
+        [
+            "......a......a......",
+            ".......a....a.......",
+            "..ww....BBBB....ww..",
+            ".wWWw..BBBBBB..wWWw.",
+            ".WWWWw.BeBBeB.wWWWW.",
+            ".WssWw.BeBBeB.wWssW.",
+            ".WssWWwBBrrBBwWWssW.",
+            ".WWWWWwbBBBBbwWWWWW.",
+            "..WWWWwbBBBBbwWWWW..",
+            "..wWWWwbBBBBbwWWWw..",
+            "..wWsWwbBBBBbwWsWw..",
+            "...wWWwwbBBbwwWWw...",
+            "....www.bBBb.www....",
+            "........bBBb........",
+            ".........bb.........",
+            "....................",
+        ],
+    ),
+}
+
+# Same shape as base.POSES.
+POSES: dict[str, dict] = {
+    "slick": {
+        "face": "m", "line": "g", "eyes": [(5, 6), (6, 6), (11, 6), (12, 6)],
+        "idle": [],
+        "working": [(16, 11, "s")],
+        "blocked": [(8, 9, "kk")],
+        "done": [(6, 9, "k"), (11, 9, "k")],
+    },
+    "dutch": {
+        "face": "F", "line": "f", "eyes": [(5, 6), (6, 6), (13, 6), (14, 6)],
+        "idle": [],
+        "working": [(9, 2, "UU"), (9, 3, "UU")],
+        "blocked": [(8, 10, "kkkk")],
+        "done": [(7, 10, "kFFFFk")],
+    },
+    "marlow": {
+        "face": "w", "line": "d", "eyes": [(5, 5), (12, 5)],
+        "idle": [],
+        "working": [(16, 10, "U")],
+        "blocked": [(8, 7, "bb")],
+        "done": [],
+    },
+    "velma": {
+        "face": "B", "line": "b", "eyes": [(8, 4), (11, 4)],
+        "idle": [],
+        "working": [(2, 5, "UU"), (16, 5, "UU")],
+        "blocked": [(9, 6, "kk")],
+        "done": [],
+    },
+}
