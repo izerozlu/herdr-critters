@@ -15,7 +15,8 @@ The mod fills the layout's `agents` block, top to bottom:
   cycles to the next theme), and on the right `N BUSY` (cyan `#5ee6f2` when any
   agent works, else gray). The left group shrinks first, the busy count never
   gets cut.
-- **Group headers** (30 px): a 15x11 machine icon, the group label in bold
+- **Group headers** (30 px): a 12 px chevron (down when open, right when
+  collapsed), a 15x11 machine icon, the group label in bold
   Silkscreen 11 px, a 2 px rule, and `busy/total`. By machine the label is
   `THIS MACHINE` or the machine name; by space it is the space name in capitals,
   in the space's color from the Spaces list.
@@ -57,6 +58,19 @@ Scenes by machine: this machine is `dusk` (purple), other machines take `den`
 - The focused agent's card has an orange `#e8922e` border.
 - Click a card to focus its pane (`pane.focus`). Hover shows a pin button; it
   runs `terminal.pin`. Pinned agents go first in their group.
+- Click a group header to collapse the group: its cards go and only the
+  header line stays. The collapsed groups are shared state
+  (`herdr-critters.collapsed`, a map of `space:<id>` or `machine:<name>` to
+  `true`).
+- Hover also shows a minus button beside the pin: it makes the card compact,
+  one line with a 36x30 sprite box, the name and the status box (a plus button
+  opens it again). Compact cards are shared state (`herdr-critters.compact`, a
+  map of agent address to `true`).
+- Right-click a card (or a small sprite box) for a menu: `PIN TO TOP` /
+  `UNPIN`, `COLLAPSE CARD` / `EXPAND CARD`, `COLLAPSE GROUP` / `SHOW GROUP`
+  (the agent's own group). It is a pointer popup (`openOverlay`, `kind:
+  popup`, `frame: none`, 190x92) of this same mod with `props().menu` set to
+  the agent's address; it draws in the theme's colors and closes on a pick.
 - The group toggle is shared state (`herdr-critters.group`). The theme button
   is shared state too (`herdr-critters.theme`, a theme id; unknown or missing
   means `retro`).
@@ -70,9 +84,11 @@ Scenes by machine: this machine is `dusk` (purple), other machines take `den`
   `mod.json` (`place: none`), `themes/` (registry `index.js` and one folder per
   theme with `theme.js` and `art/`), `fonts/`.
 - **herdr functions**: `agents`, `terminals`, `spaces`, `machines`, `layout`,
-  `theme`, `shared`, `setShared`, `setAgentOrder`, `run`.
+  `theme`, `shared`, `setShared`, `setAgentOrder`, `run`, `openOverlay`,
+  `closeOverlay`, `props`.
 - **Commands**: `pane.focus`, `terminal.pin`, `terminal.peek`.
-- **Shipped mods it uses**: the `pin` and `pin-off` icons of
+- **Shipped mods it uses**: the `pin`, `pin-off`, `plus`, `minus`,
+  `chevron-down` and `chevron-right` icons of
   `workspace-chrome`.
 - **Programs, network, files**: none. It does not run programs, reach the
   network or read files outside its own folder.

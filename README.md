@@ -21,6 +21,9 @@ Y2K or neon cyberpunk.
 - The corner badge moves: `z` when idle, a spinner when working, a blinking `!`
   when blocked, a check when done. Working sprites bob.
 - Click a card to focus its pane. Hover to pin or unpin.
+- Click a group header to collapse the group to its header line. Hover a
+  card and click `-` to make it one thin line; `+` opens it again.
+- Right-click a card for a menu: pin, collapse the card, collapse its group.
 - A narrow sidebar (under 160 px) shows only the sprite boxes.
 - The look is a theme (see [Themes](#themes)). The header button next to
   `BY MACHINE` shows the active theme (`RETRO`); click it to switch to the next.
