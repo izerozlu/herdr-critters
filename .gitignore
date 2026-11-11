@@ -3,3 +3,4 @@ __pycache__/
 .worktrees/
 .idea/
 gpui-kit.d.ts
+jsconfig.json
