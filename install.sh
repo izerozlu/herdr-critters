@@ -6,8 +6,8 @@ set -eu
 root="$(cd "$(dirname "$0")" && pwd)"
 home="${HERDR_APP_HOME:-$HOME/.config/herdr-app}"
 
-# The pane collapse mods share collapse.js (mods can't import across folders).
-for mod in pane-collapse-menu; do
+# Three mods share collapse.js (mods can't import across folders).
+for mod in pane-collapse-menu herdr-critters; do
   cmp -s "$root/mods/pane-collapse/collapse.js" "$root/mods/$mod/collapse.js" ||
     { echo "mods/*/collapse.js differ; make them equal first." >&2; exit 1; }
 done
