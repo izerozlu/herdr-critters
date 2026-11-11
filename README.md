@@ -27,6 +27,9 @@ Y2K or neon cyberpunk.
 - A narrow sidebar (under 160 px) shows only the sprite boxes.
 - The look is a theme (see [Themes](#themes)). The header button next to
   `BY MACHINE` shows the active theme (`RETRO`); click it to switch to the next.
+- Collapse a pane (see [Pane collapse](#pane-collapse)): right-click it and
+  pick **Collapse pane**, or press `cmd-shift-c`. A chip shows at the bottom
+  right of the tab; click it to bring the pane back.
 
 
 ## Install
@@ -44,12 +47,64 @@ To use only the mod in a layout of your own, set that layout's agents block to
 ./install.sh
 ```
 
-This copies `mods/herdr-critters` to `~/.config/herdr-app/mods/` and runs
-`herdr-app check`. Herdr reloads the mod live. Run it again after every change.
-A symlink does not work: Herdr does not load a mod's images through one.
+This copies `mods/herdr-critters`, `mods/pane-collapse` and
+`mods/pane-collapse-menu` to `~/.config/herdr-app/mods/` and runs
+`herdr-app check` on each. It also adds the keys in `keys.json` to your
+`keys.json`, but never replaces a key you already bound. Herdr reloads the
+mods live. Run it again after every change. A symlink does not work: Herdr
+does not load a mod's images through one.
 
 `RECIPE.md` is the brief another agent builds the mod from. Update it and
 `preview.png` when the mod changes.
+
+## Pane collapse
+
+The layout can hide a pane and keep its program running.
+
+- Right-click a pane, then pick **Collapse pane**. It acts on the pane you
+  clicked, not the focused one. The card menu has **COLLAPSE PANE** too.
+- `cmd-shift-c` collapses the focused pane.
+- `cmd-shift-e` puts back the last pane you collapsed in this tab.
+- A collapsed agent stays in the sidebar as a collapsed card in its group.
+  Click the card (or its `+`) to put the pane back. Its menu says
+  **EXPAND PANE**.
+- A chip shows at the bottom right of the tab too. Click it to put the pane
+  back. You can drag the chips to another edge.
+
+Chips show the panes collapsed from the tab you are looking at. A pane whose
+tab was closed shows in every tab; its chip puts it next to the focused pane.
+A tab's only pane can't collapse.
+
+| Path | What it is |
+| --- | --- |
+| `mods/pane-collapse/` | the chips (a floating block on `main`) and the key commands |
+| `mods/pane-collapse-menu/` | a copy of the shipped terminal menu with **Collapse pane** added; the layout's `terminal_menu` |
+| `mods/*/collapse.js` | the collapse and restore logic; the same file in `pane-collapse`, `pane-collapse-menu` and `herdr-critters` |
+| `keys.json` | the keys, for the `critters` layout only |
+
+Mods can't import from another mod's folder, so `collapse.js` is copied into
+three mods. Keep the copies the same; `install.sh` stops if they differ.
+
+Herdr has no command to shrink a split. So "collapse" parks the terminal
+(`terminal.park`): its pane goes away and the program keeps running. Before
+that, the mod reads the tab's split tree (`doc.get` of the `herdr-app`
+document through `hc connect`) and saves where the pane sat, in shared state
+`pane-collapse`. To restore, it selects the tab, focuses the pane it sat next
+to, runs `terminal.keep` with `place` right or down, and, if the pane was on
+the left or top, `pane.swap`s it back.
+
+A parked terminal leaves `agents()`. The critters mod adds it back from the
+`pane-collapse` records and `terminals()`, after the last agent of its space.
+
+Limits:
+
+- Split sizes are not kept. The restored pane gets half of its neighbor.
+- The place is exact when the neighbor was a single pane. When the neighbor
+  was a group of panes, the pane comes back inside that group.
+- A parked terminal has core keep off. If herdr-core restarts, a collapsed
+  terminal is lost, and its card and chip go away.
+- The menu is a copy of the shipped `menu` from Herdr 0.1.12. Herdr updates
+  don't change it.
 
 ## Themes
 

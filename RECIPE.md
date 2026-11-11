@@ -67,10 +67,16 @@ Scenes by machine: this machine is `dusk` (purple), other machines take `den`
   opens it again). Compact cards are shared state (`herdr-critters.compact`, a
   map of agent address to `true`).
 - Right-click a card (or a small sprite box) for a menu: `PIN TO TOP` /
-  `UNPIN`, `COLLAPSE CARD` / `EXPAND CARD`, `COLLAPSE GROUP` / `SHOW GROUP`
-  (the agent's own group). It is a pointer popup (`openOverlay`, `kind:
-  popup`, `frame: none`, 190x92) of this same mod with `props().menu` set to
-  the agent's address; it draws in the theme's colors and closes on a pick.
+  `UNPIN`, `COLLAPSE PANE` / `EXPAND PANE`, `COLLAPSE CARD` / `EXPAND CARD`
+  (not on a collapsed pane's card), `COLLAPSE GROUP` / `SHOW GROUP` (the
+  agent's own group). It is a pointer popup (`openOverlay`, `kind: popup`,
+  `frame: none`, 190x118) of this same mod with `props().menu` set to the
+  agent's address; it draws in the theme's colors and closes on a pick.
+- A collapsed pane (the `pane-collapse` mod parks its terminal) leaves
+  `agents()`. The mod adds it back from the shared `pane-collapse` records and
+  `terminals()`, after the last agent of its space, always as a compact card.
+  A click on the card, or its plus button, puts the pane back (`expand` in
+  `collapse.js`).
 - The group toggle is shared state (`herdr-critters.group`). The theme button
   is shared state too (`herdr-critters.theme`, a theme id; unknown or missing
   means `retro`).
@@ -79,19 +85,28 @@ Scenes by machine: this machine is `dusk` (purple), other machines take `den`
 ## Built from
 
 - **Layout** `layouts/critters.json`: the shipped `main` layout with the
-  `agents` block set to `{ "mod": "herdr-critters" }`.
+  `agents` block set to `{ "mod": "herdr-critters" }`, a `pane-collapse`
+  floating block on `main` (bottom right) and `"terminal_menu":
+  "pane-collapse-menu"`.
+- **Keys** `keys.json`: `layout:critters` binds `cmd-shift-c` to
+  `pane-collapse.collapse` and `cmd-shift-e` to `pane-collapse.expand`.
 - **Mod** `mods/herdr-critters/`: `main.js` (one `View`, theme-agnostic),
   `mod.json` (`place: none`), `themes/` (registry `index.js` and one folder per
-  theme with `theme.js` and `art/`), `fonts/`.
+  theme with `theme.js` and `art/`), `fonts/`, `collapse.js` (the same file
+  as in `mods/pane-collapse/`).
+- **Mods** `mods/pane-collapse/` (the chips and the key commands) and
+  `mods/pane-collapse-menu/` (the shipped terminal menu with `Collapse pane`).
 - **herdr functions**: `agents`, `terminals`, `spaces`, `machines`, `layout`,
   `theme`, `shared`, `setShared`, `setAgentOrder`, `run`, `openOverlay`,
   `closeOverlay`, `props`.
-- **Commands**: `pane.focus`, `terminal.pin`, `terminal.peek`.
+- **Commands**: `pane.focus`, `terminal.pin`, `terminal.peek`, and through
+  `collapse.js`: `terminal.park`, `terminal.keep`, `tab.select`, `pane.swap`.
 - **Shipped mods it uses**: the `pin`, `pin-off`, `plus`, `minus`,
   `chevron-down` and `chevron-right` icons of
   `workspace-chrome`.
-- **Programs, network, files**: none. It does not run programs, reach the
-  network or read files outside its own folder.
+- **Programs, network, files**: one program. To collapse a pane,
+  `collapse.js` runs `hc connect` once to read the tab's split tree (read
+  only). It does not reach the network or read files outside its own folder.
 - **Art**: SVGs in `mods/herdr-critters/themes/<id>/art/`: one sprite
   per name and status (`sprite-<name>-<status>.svg`), a scene per status
   (`scene-<status>.svg`), a machine icon per scene (`icon-machine-<scene>.svg`)
