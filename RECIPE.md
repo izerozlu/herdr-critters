@@ -72,11 +72,8 @@ Scenes by machine: this machine is `dusk` (purple), other machines take `den`
   agent's own group). It is a pointer popup (`openOverlay`, `kind: popup`,
   `frame: none`, 190x118) of this same mod with `props().menu` set to the
   agent's address; it draws in the theme's colors and closes on a pick.
-- A collapsed pane (the `pane-collapse` mod parks its terminal) leaves
-  `agents()`. The mod adds it back from the shared `pane-collapse` records and
-  `terminals()`, after the last agent of its space, always as a compact card.
-  A click on the card, or its plus button, puts the pane back (`expand` in
-  `collapse.js`).
+- A collapsed pane's agent stays as a compact card; a click puts the pane
+  back (see [Pane collapse](#pane-collapse)).
 - The group toggle is shared state (`herdr-critters.group`). The theme button
   is shared state too (`herdr-critters.theme`, a theme id; unknown or missing
   means `retro`).
@@ -85,17 +82,12 @@ Scenes by machine: this machine is `dusk` (purple), other machines take `den`
 ## Built from
 
 - **Layout** `layouts/critters.json`: the shipped `main` layout with the
-  `agents` block set to `{ "mod": "herdr-critters" }`, a `pane-collapse`
-  floating block on `main` (bottom right) and `"terminal_menu":
-  "pane-collapse-menu"`.
-- **Keys** `keys.json`: `layout:critters` binds `cmd-shift-c` to
-  `pane-collapse.collapse` and `cmd-shift-e` to `pane-collapse.expand`.
+  `agents` block set to `{ "mod": "herdr-critters" }`, plus the pane collapse
+  parts (see [Pane collapse](#pane-collapse)).
 - **Mod** `mods/herdr-critters/`: `main.js` (one `View`, theme-agnostic),
   `mod.json` (`place: none`), `themes/` (registry `index.js` and one folder per
-  theme with `theme.js` and `art/`), `fonts/`, `collapse.js` (the same file
-  as in `mods/pane-collapse/`).
-- **Mods** `mods/pane-collapse/` (the chips and the key commands) and
-  `mods/pane-collapse-menu/` (the shipped terminal menu with `Collapse pane`).
+  theme with `theme.js` and `art/`), `fonts/`, `collapse.js` (see
+  [Pane collapse](#pane-collapse)).
 - **herdr functions**: `agents`, `terminals`, `spaces`, `machines`, `layout`,
   `theme`, `shared`, `setShared`, `setAgentOrder`, `run`, `openOverlay`,
   `closeOverlay`, `props`.
@@ -143,3 +135,87 @@ A theme is `themes/<id>/theme.js`, a default export of one object:
 `themes/index.js` exports `THEMES` (cycle order), `DEFAULT_THEME` (`retro`) and
 `themeById(id)` (unknown id gives the default). To add a theme: write
 `theme.js`, add the art, import it in `index.js` and add it to `THEMES`.
+
+## Extras
+
+Extra tools that ship with the `critters` layout, beside the agents sidebar.
+
+### Pane collapse
+
+Hide a pane and keep its program running. Herdr has no command to shrink a
+split, so a collapse parks the terminal (`terminal.park`): the pane goes away,
+the program keeps running. A record of where the pane sat lets it come back.
+
+**What you see**
+
+- The terminal right-click menu has **Collapse pane** (a `minus` icon, the
+  collapse key as its hint) just before **Close pane**. It shows only for a
+  terminal pane in a tab with 2 or more panes, and acts on the pane that was
+  right-clicked, not the focused one.
+- Chips: a floating row at the bottom right of the `main` block, one chip per
+  collapsed pane of the shown tab, plus any whose tab was closed. A chip is a
+  26 px pill (radius 6, 1 px `border`, `raised` background, `hover` on
+  hover) with the program icon, its name (max 160 px), the last folder of its
+  cwd (`dim`, max 120 px) and its status: a spinner when working, a 6 px dot
+  in `blocked` or `done`. A `minus` icon leads the row. No collapsed panes:
+  the block draws nothing. The row goes vertical on a left or right edge.
+- In the agents sidebar, a collapsed pane's agent stays in its group as a
+  compact card (see below).
+
+**How it behaves**
+
+- Collapse (`collapse(target)` in `collapse.js`): find the pane; refuse a
+  non-terminal pane or a tab's only pane with a warning toast. Read the tab's
+  split tree from the machine's `herdr-app` document (`doc.get` over
+  `hc connect`, read only). Walk up from the pane to the first split with 2 or
+  more children. The neighbor is the sibling before it (or after it when it is
+  first), and the anchor is that sibling's leaf on the side that touches the
+  pane. Save `place` (`right` in a row, `down` in a column) and `swap`
+  (`left` or `up` when the pane came first, else none). Then run
+  `terminal.park`.
+- The records are shared state `pane-collapse`: `{ items: [{ terminal,
+  space, tab, name, icon, tint, cwd, at, anchor: { pane, terminal }, place,
+  swap }] }`. Only records whose terminal is still live count.
+- Expand (`expand(rec, cx)`): drop the record. If its tab is gone, run
+  `terminal.keep` right of the focused pane (or as a new tab). Else
+  `tab.select` the tab, `pane.focus` the anchor (else any pane of the tab, and
+  no swap), `terminal.keep {place}`, wait (up to 2 s, 50 ms steps) for the new
+  pane, then `pane.focus` it and `pane.swap` back.
+- Keys (section `layout:critters` in `keys.json`): `cmd-shift-c` runs
+  `pane-collapse.collapse` (the focused pane); `cmd-shift-e` runs
+  `pane-collapse.expand` (the newest collapsed pane of the shown tab). The
+  `pane-collapse` mod gets them through `nextCommand()`.
+- A chip click runs `expand` for its record.
+- Critters cards: a parked terminal leaves `agents()`. `herdr-critters` adds
+  it back from the records and `terminals()` (only terminals with a status),
+  after the last agent of its space, always as a compact card. A click on the
+  card, or its plus button, runs `expand`. The card menu shows
+  `EXPAND PANE` for it (and no card collapse), and `COLLAPSE PANE` for other
+  cards.
+
+**Built from**
+
+- **Layout** `layouts/critters.json`: a floating block on `main`
+  (`{ "id": "collapsed", "content": { "mod": "pane-collapse" }, "edge":
+  "bottom", "align": "end" }`) and `"terminal_menu": "pane-collapse-menu"` on
+  the root.
+- **Mods** `mods/pane-collapse/` (`main.js`: the chips and the key commands;
+  `mod.json` `place: none`) and `mods/pane-collapse-menu/` (a clone of the
+  shipped `menu` from Herdr 0.1.12 with the `Collapse pane` item).
+- **Shared code** `collapse.js`: the same file in `pane-collapse`,
+  `pane-collapse-menu` and `herdr-critters`, because a mod can't import from
+  another mod's folder. `install.sh` stops if the copies differ.
+- **herdr functions**: `panes`, `spaces`, `focused`, `terminals`, `shared`,
+  `setShared`, `notify`, `exec`, `run`, `nextCommand`, `keys`, `theme`,
+  `placement`.
+- **Commands**: `terminal.park`, `terminal.keep`, `tab.select`, `pane.focus`,
+  `pane.swap`.
+- **Programs**: `hc connect`, once per collapse, to read the split tree.
+
+**Limits**
+
+- Split sizes are not kept: the restored pane gets half of its neighbor.
+- The place is exact only when the neighbor was a single pane; next to a
+  group of panes, the pane comes back inside that group.
+- A parked terminal has core keep off: if herdr-core restarts, it is lost.
+- The menu is a copy; Herdr updates don't change it.
