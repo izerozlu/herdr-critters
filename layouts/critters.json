@@ -130,7 +130,17 @@
                     "reveal": "always"
                   }
                 }
-              }
+              },
+              "floating": [
+                {
+                  "id": "collapsed",
+                  "content": {
+                    "mod": "pane-collapse"
+                  },
+                  "edge": "bottom",
+                  "align": "end"
+                }
+              ]
             },
             {
               "id": "panel",
@@ -179,5 +189,6 @@
         }
       ]
     }
-  ]
+  ],
+  "terminal_menu": "pane-collapse-menu"
 }

@@ -1,0 +1,6 @@
+{
+  "layout:critters": {
+    "cmd-shift-c": "pane-collapse.collapse",
+    "cmd-shift-e": "pane-collapse.expand"
+  }
+}
