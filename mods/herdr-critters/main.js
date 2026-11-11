@@ -6,6 +6,7 @@ import { v_flex, h_flex } from "gpui-base";
 import { agents, terminals, spaces, machines, run, setAgentOrder, layout, shared, setShared, theme, openOverlay, closeOverlay, props } from "herdr";
 import { webcrypto } from "crypto";
 import { THEMES, themeById } from "./themes/index.js";
+import { live as collapsedPanes, collapse, expand } from "./collapse.js";
 
 const THEME_KEY = "herdr-critters.theme";
 const activeTheme = () => themeById(shared(THEME_KEY));
@@ -64,6 +65,44 @@ function toggle(key, id) {
 
 // The collapse id of the group an agent shows in.
 const groupIdOf = (a) => (groupBy() === "space" ? `space:${a.space}` : `machine:${machineOf(a) ?? ""}`);
+
+// A collapsed pane (pane-collapse) parks its terminal, so the agent leaves agents().
+// It stays here as a collapsed card, built from its record and its core terminal,
+// after the last agent of its space. `parked` holds the record to expand it.
+function withCollapsed(list, all, spaceList) {
+  const out = [...list];
+  const shown = new Set(list.map((a) => a.address));
+  const byAddress = new Map(all.map((t) => [t.address, t]));
+  for (const rec of collapsedPanes()) {
+    const t = byAddress.get(rec.terminal);
+    if (shown.has(rec.terminal) || !t?.status) continue;
+    const space = spaceList.find((s) => s.id === rec.space);
+    const a = {
+      address: rec.terminal,
+      pane: null,
+      space: rec.space,
+      space_name: space?.name ?? "",
+      tab: rec.tab,
+      tab_index: 0,
+      tab_name: "",
+      status: t.status,
+      app: t.report?.app ?? null,
+      program: t.program ?? { name: rec.name },
+      title: rec.name,
+      seq: 0,
+      pinned: t.labels?.["herdr.pinned"] === "true",
+      focused: false,
+      parked: rec,
+    };
+    let at = out.length;
+    for (let i = out.length - 1; i >= 0; i--) if (out[i].space === rec.space) { at = i + 1; break; }
+    out.splice(at, 0, a);
+  }
+  return out;
+}
+
+// Puts a collapsed pane back. cx: an event context.
+const expandPane = (a, cx) => cx.spawn(async (cx) => { await expand(a.parked, cx); });
 
 // Where a theme's picked names are stored. A theme can set `namesKey` to keep an old key
 // (retro keeps "names" so current users keep their names).
@@ -176,7 +215,7 @@ export default class RetroAgents extends View {
       .tooltip(tooltip)
       .on_click((_e, cx) => {
         cx.stop_propagation();
-        act();
+        act(cx);
         this.hovered = null;
         cx.notify();
       })
@@ -217,7 +256,7 @@ export default class RetroAgents extends View {
         else if (this.hovered === a.address) this.hovered = null;
         cx.notify();
       })
-      .on_click(() => run("pane.focus", { pane: a.pane }))
+      .on_click((_e, cx) => (a.parked ? expandPane(a, cx) : run("pane.focus", { pane: a.pane })))
       .on_mouse_down("right", (_e, cx) => this.openMenu(a, cx));
   }
 
@@ -225,31 +264,42 @@ export default class RetroAgents extends View {
   openMenu(a, cx) {
     cx.stop_propagation();
     this.hovered = null;
-    openOverlay({ mod: "herdr-critters", kind: "popup", frame: "none", width: 190, height: 92, props: { menu: a.address } });
+    openOverlay({ mod: "herdr-critters", kind: "popup", frame: "none", width: 190, height: 118, props: { menu: a.address } });
   }
 
   // The context menu: pin, card collapse and group collapse for one agent.
   menu(address) {
     const { colors: C } = this.look;
-    const a = agents().find((x) => x.address === address);
+    const a = withCollapsed(agents(), terminals(), spaces()).find((x) => x.address === address);
     const close = () => closeOverlay(props().overlay);
     if (!a) {
       close();
       return div();
     }
     const group = groupIdOf(a);
-    const item = (id, label, act) => this.pixel(h_flex(), 10, C.sub)
+    // An async act closes the menu when it ends: closing the popup stops its tasks.
+    const item = (id, label, act, wait) => this.pixel(h_flex(), 10, C.sub)
       .id(`menu-${id}`)
       .h(26)
       .px(8)
       .items_center()
       .cursor_pointer()
       .hover((el) => el.bg(C.divider).text_color(C.text))
-      .on_click(() => {
-        act();
-        close();
+      .on_click((_e, cx) => {
+        if (!wait) {
+          act();
+          close();
+          return;
+        }
+        cx.spawn(async (cx) => {
+          await act(cx);
+          close();
+        });
       })
       .child(label);
+    const pane = a.parked
+      ? item("pane", "EXPAND PANE", (cx) => expand(a.parked, cx), true)
+      : item("pane", "COLLAPSE PANE", () => collapse({ pane: a.pane, terminal: a.address }), true);
     return v_flex()
       .size_full()
       .p(4)
@@ -257,7 +307,8 @@ export default class RetroAgents extends View {
       .border(2)
       .border_color(C.btnEdge)
       .child(item("pin", a.pinned ? "UNPIN" : "PIN TO TOP", () => run("terminal.pin", { terminal: a.address, pinned: !a.pinned })))
-      .child(item("card", isSet(COMPACT_KEY, a.address) ? "EXPAND CARD" : "COLLAPSE CARD", () => toggle(COMPACT_KEY, a.address)))
+      .child(pane)
+      .when(!a.parked, (el) => el.child(item("card", isSet(COMPACT_KEY, a.address) ? "EXPAND CARD" : "COLLAPSE CARD", () => toggle(COMPACT_KEY, a.address))))
       .child(item("group", isSet(COLLAPSED_KEY, group) ? "SHOW GROUP" : "COLLAPSE GROUP", () => toggle(COLLAPSED_KEY, group)));
   }
 
@@ -267,11 +318,13 @@ export default class RetroAgents extends View {
   }
 
   compactButton(a, compact) {
+    if (a.parked) return this.cardButton(`compact-${a.address}`, "Expand the pane", "plus", (cx) => expandPane(a, cx));
     return this.cardButton(`compact-${a.address}`, compact ? "Expand the card" : "Collapse the card", compact ? "plus" : "minus",
       () => toggle(COMPACT_KEY, a.address));
   }
 
   // A collapsed card: one thin line with a small sprite, the name and the status.
+  // A collapsed pane's agent always shows as one.
   compactCard(a, scene, name) {
     const { colors: C, fonts } = this.look;
     const hot = this.hovered === a.address;
@@ -286,7 +339,7 @@ export default class RetroAgents extends View {
   }
 
   card(a, scene, tabs, name, session) {
-    if (isSet(COMPACT_KEY, a.address)) return this.compactCard(a, scene, name);
+    if (a.parked || isSet(COMPACT_KEY, a.address)) return this.compactCard(a, scene, name);
     const { colors: C, fonts } = this.look;
     const hot = this.hovered === a.address;
     return this.cardFrame(a, scene)
@@ -363,7 +416,7 @@ export default class RetroAgents extends View {
       .border(2)
       .border_color(a.focused ? C.focus : C.clear)
       .cursor_pointer()
-      .on_click(() => run("pane.focus", { pane: a.pane }))
+      .on_click((_e, cx) => (a.parked ? expandPane(a, cx) : run("pane.focus", { pane: a.pane })))
       .on_mouse_down("right", (_e, cx) => this.openMenu(a, cx))
       .child(this.stage(a, scene, 36, 30, this.picked[a.address]));
   }
@@ -399,8 +452,9 @@ export default class RetroAgents extends View {
     const bySpace = groupBy() === "space";
     const t = theme();
     const spaceColors = shared("space.colors") ?? {};
+    const all = terminals();
     const groups = [];
-    for (const a of agents()) {
+    for (const a of withCollapsed(agents(), all, spaces())) {
       const m = machineOf(a);
       const key = bySpace ? a.space : m;
       if (groups.at(-1)?.key === key) {
@@ -419,7 +473,6 @@ export default class RetroAgents extends View {
     const names = this.names(list);
     if (narrow()) return this.rail(list, sceneOf);
 
-    const all = terminals();
     const tabs = spaces().flatMap((s) => s.tabs);
     const busy = list.filter((a) => a.status === "working").length;
     const byAddress = new Map(all.map((t) => [t.address, t]));
